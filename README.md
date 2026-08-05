@@ -15,7 +15,7 @@
 
 ---
 
-### **💻 V2.2 — local / Railway deploy coming (Phase C)**
+### **💻 V2.2 Live → [fliccs.up.railway.app](https://fliccs.up.railway.app)**
 
 ---
 

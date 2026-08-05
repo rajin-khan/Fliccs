@@ -1,7 +1,7 @@
 # Tessro → Fliccs Rebrand Plan
 
-**Status:** Phases A–B done locally (2026-08-05). Railway / GitHub still deferred.  
-**Goal:** Rename Tessro to Fliccs. Keep product behavior the same. Prove it on localhost first. Railway, GitHub, portfolio, and domain work come **last**.
+**Status:** Rebrand complete for app + GitHub + Railway + local folder `ACTIVE/FLICCS`. Portfolio deferred.  
+**Goal:** Rename Tessro to Fliccs. Keep product behavior the same. Live at `https://fliccs.up.railway.app`.
 
 ---
 
@@ -144,8 +144,9 @@ Do this only after Phase B is green.
 
 1. GitHub: rename `Tessro` → `Fliccs`; update local remote.
 2. Portfolio: `rajinkhan.com/projects/fliccs` + Landing href.
-3. Optional: local folder `ACTIVE/TESSRO` → `ACTIVE/FLICCS`.
-4. Ko-fi slug only if/when you create it.
+3. ~~Optional: local folder `ACTIVE/TESSRO` → `ACTIVE/FLICCS`.~~ **Done.**
+4. TURN script: `/Users/rajin/Developer/scripts/fliccs.sh` (legacy `tessro.sh` wraps it).
+5. Portfolio / Ko-fi — deferred.
 
 ---
 
@@ -157,20 +158,23 @@ Do this only after Phase B is green.
 - [x] Update all UI / legal / meta / package / README / server strings Tessro → Fliccs
 - [x] Point local `.env` at localhost (no tessro.com)
 - [x] Verify on localhost: health, socket session create, UI brand, final `tessro` grep clean
-- [ ] Manual: Stream Mode after refreshing Twilio TURN creds (current `lastResetTimestamp` is expired)
+- [x] TURN refreshed via updater script (re-run `fliccs.sh` when the 24h window expires)
 
-### Later (external)
+### External
 
-- [ ] Delete old Railway project; create Fliccs Railway project; set prod `CLIENT_URL` + `VITE_SERVER_URL`; deploy
-- [ ] Rename GitHub repo; update portfolio slug/href; update README live link
+- [x] Railway: service Fliccs @ `https://fliccs.up.railway.app` (reuse existing project; vars + networking updated)
+- [x] GitHub repo renamed to `rajin-khan/Fliccs`
+- [x] Local folder `ACTIVE/FLICCS`; TURN script → `scripts/fliccs.sh`
+- [ ] Portfolio / Ko-fi (deferred)
+- [ ] README live link → `https://fliccs.up.railway.app` (if not already)
 
 ---
 
-## Short answers (for when you get to Railway)
+## Short answers
 
-**Do you need a custom domain?** No — `*.up.railway.app` is enough for this fullstack app.
+**Custom domain?** Not required — `fliccs.up.railway.app` is enough.
 
-**Can you delete the old Railway project and start fresh?** Yes — no DB/cron to migrate; only host + env + URL.
+**Fresh Railway project?** Not needed — existing service was renamed and reconnected.
 
 ---
 

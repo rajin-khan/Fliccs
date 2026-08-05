@@ -1,13 +1,20 @@
 # Twilio TURN credential refresh (Stream Mode)
 
-`twilioturnservercurl.md` was gitignored and is not in the repo. Use this instead.
-
 Hardcoded creds live in `client/src/hooks/useWebRTC.js` → `turnCredentials` (`username`, `credential`, `lastResetTimestamp`). They expire ~24h. `ServerStatusTimer` shows the countdown from `lastResetTimestamp`.
 
-## Refresh
+## Preferred: run the updater script
 
 ```bash
-# Needs your Twilio Account SID + Auth Token (from Twilio Console)
+bash /Users/rajin/Developer/scripts/fliccs.sh
+```
+
+(`tessro.sh` still works as a thin wrapper to the same script.)
+
+This fetches Twilio tokens, patches `useWebRTC.js`, commits, and pushes (`TURN Server Maintenance`).
+
+## Manual curl (if needed)
+
+```bash
 curl -s -X POST "https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Tokens.json" \
   -u "${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}"
 ```
@@ -15,12 +22,10 @@ curl -s -X POST "https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID
 From the JSON response, copy:
 - `username` → `turnCredentials.username`
 - `password` → `turnCredentials.credential`
-- Set `lastResetTimestamp` to now, e.g. `"2026-08-05 17:00"` (local time is fine; same format as existing)
+- Set `lastResetTimestamp` to now, e.g. `"2026-08-05 17:00"`
 
 Do **not** change the `global.turn.twilio.com` / `global.stun.twilio.com` URLs.
 
-Vite hot-reloads the client after you save `useWebRTC.js`. No server restart needed for TURN-only edits.
+## Check expiry
 
-## Check expiry without guessing
-
-On the landing page, look at **Streaming Mode Available For:** — if it says expired / red, refresh creds before testing Stream Mode. Sync Mode does not need TURN.
+On the landing page, **Streaming Mode Available For:** — if expired/red, refresh before Stream Mode. Sync Mode does not need TURN.

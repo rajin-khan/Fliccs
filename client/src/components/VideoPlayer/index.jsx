@@ -20,6 +20,7 @@ function VideoPlayer({
     const playerRef = useRef(null);
     const playerWrapperRef = useRef(null);
     const videoElementRef = useRef(null);
+    const guestVideoRef = useRef(null);
     const seekingRef = useRef(false);
     const isUserControllingRef = useRef(false);
 
@@ -256,6 +257,12 @@ function VideoPlayer({
                     if (typeof internalPlayer.setAttribute === 'function') {
                         internalPlayer.setAttribute('playsinline', 'true');
                     }
+                    // MediaStream playback sometimes needs an explicit play() after srcObject bind
+                    if (remoteStream && internalPlayer.paused) {
+                        internalPlayer.play().catch((err) => {
+                            console.warn('[VideoPlayer] Autoplay after MediaStream bind failed:', err?.message || err);
+                        });
+                    }
                 } else { videoElementRef.current = null; }
             } else { videoElementRef.current = null; }
         } catch (error) {
@@ -263,7 +270,52 @@ function VideoPlayer({
             setIsPlayerReady(false);
             videoElementRef.current = null;
         }
-    }, []);
+    }, [remoteStream]);
+
+    // Guest stream arrived — don't leave the LOADING overlay up if onReady is slow/missing
+    useEffect(() => {
+        if (!isHost && remoteStream) {
+            setIsPlayerReady(true);
+        }
+    }, [isHost, remoteStream]);
+
+    // Bind WebRTC MediaStream with a native <video> — ReactPlayer often never fires onReady for streams
+    useEffect(() => {
+        const el = guestVideoRef.current;
+        if (!el || !remoteStream || isHost) return;
+
+        el.srcObject = remoteStream;
+        el.muted = isGuestMuted;
+        const tryPlay = () => {
+            el.play().catch((err) => {
+                console.warn('[VideoPlayer] Guest autoplay failed:', err?.message || err);
+            });
+        };
+        tryPlay();
+
+        const onPlaying = () => setIsPlayerReady(true);
+        el.addEventListener('playing', onPlaying);
+        el.addEventListener('loadedmetadata', onPlaying);
+
+        return () => {
+            el.removeEventListener('playing', onPlaying);
+            el.removeEventListener('loadedmetadata', onPlaying);
+            if (el.srcObject === remoteStream) {
+                el.srcObject = null;
+            }
+        };
+    }, [remoteStream, isHost]);
+
+    useEffect(() => {
+        const el = guestVideoRef.current;
+        if (el) el.muted = isGuestMuted;
+    }, [isGuestMuted]);
+
+    useEffect(() => {
+        const el = guestVideoRef.current;
+        if (!el || isHost || !remoteStream) return;
+        el.volume = playerState.volume;
+    }, [playerState.volume, isHost, remoteStream]);
 
     const handlePlayerError = useCallback((error, data) => {
         console.error("[VideoPlayer] ReactPlayer Error:", error, data);
@@ -286,9 +338,17 @@ function VideoPlayer({
 
     // --- Render Logic ---
     const showFileInput = sessionMode === 'sync' || (sessionMode === 'stream' && isHost);
-    const videoSource = sessionMode === 'stream' && !isHost ? remoteStream : localVideoURL;
-    const showPlayerContainer = (sessionMode === 'sync' && localVideoURL) || (sessionMode === 'stream' && isHost && localVideoURL) || (sessionMode === 'stream' && !isHost);
-    const showReactPlayer = videoSource !== null;
+    // Guests should use remoteStream as soon as it arrives — don't wait for sessionMode
+    // to flip to 'stream' (that update can lag behind WebRTC ontrack).
+    const isGuestLiveStream = !isHost && !!remoteStream;
+    const videoSource = isGuestLiveStream ? remoteStream : localVideoURL;
+    const showPlayerContainer =
+        (sessionMode === 'sync' && localVideoURL) ||
+        (sessionMode === 'stream' && isHost && localVideoURL) ||
+        (sessionMode === 'stream' && !isHost) ||
+        isGuestLiveStream;
+    const showReactPlayer = videoSource !== null && !isGuestLiveStream;
+    const showGuestStream = isGuestLiveStream;
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center font-barlow text-white px-2">
@@ -360,7 +420,78 @@ function VideoPlayer({
                 <div className="absolute inset-0 bg-brand-primary/5 pointer-events-none opacity-50" />
 
                 {showPlayerContainer ? (
-                    showReactPlayer ? (
+                    showGuestStream ? (
+                        <>
+                            <video
+                                ref={guestVideoRef}
+                                autoPlay
+                                playsInline
+                                muted={isGuestMuted}
+                                className="w-full h-full object-contain bg-black"
+                                style={{ borderRadius: isFullscreen ? '0px' : '2.5rem' }}
+                            />
+
+                            {!isPlayerReady && !webRTCError && (
+                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm rounded-[2.5rem]">
+                                    <div className="w-10 h-10 border-2 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin mb-3"></div>
+                                    <span className="text-xs font-medium text-white/50 tracking-wider">LOADING VIDEO...</span>
+                                </div>
+                            )}
+
+                            <div className={`absolute top-6 left-6 z-20 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
+                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-green-500/20 backdrop-blur-md shadow-sm">
+                                    <div className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                    </div>
+                                    <span className="text-[10px] font-medium text-white/90 tracking-widest uppercase">
+                                        LIVE <span className="mx-1 text-white/20">|</span> {hostName}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className={`absolute top-6 right-6 z-20 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
+                                <div className="bg-black/60 backdrop-blur-md border border-brand-primary/30 rounded-full px-3 py-1.5 shadow-lg flex items-center justify-center">
+                                    <BrandLogo size="sm" />
+                                </div>
+                            </div>
+
+                            <div
+                                className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 cursor-none'}`}
+                                onMouseMove={handlePlayerInteraction}
+                                onMouseEnter={handlePlayerInteraction}
+                                onClick={handlePlayerInteraction}
+                            >
+                                <div className={`${showControls ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+                                    <PlayerControls
+                                        isPlaying={true}
+                                        onPlayPause={() => {
+                                            const el = guestVideoRef.current;
+                                            if (!el) return;
+                                            if (el.paused) el.play().catch(() => {});
+                                            else el.pause();
+                                        }}
+                                        volume={playerState.volume}
+                                        onVolumeChange={handleVolumeChange}
+                                        isMuted={isGuestMuted}
+                                        onMuteToggle={() => setIsGuestMuted(!isGuestMuted)}
+                                        playedSeconds={0}
+                                        loadedSeconds={0}
+                                        duration={0}
+                                        onSeek={() => {}}
+                                        onSeekMouseDown={() => {}}
+                                        onSeekMouseUp={() => {}}
+                                        onSkipForward={() => {}}
+                                        onSkipBackward={() => {}}
+                                        isHost={false}
+                                        sessionMode="stream"
+                                        isFullscreen={isFullscreen}
+                                        onToggleFullscreen={handleToggleFullscreen}
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    ) : showReactPlayer ? (
                         <>
                             <ReactPlayer
                                 ref={playerRef}

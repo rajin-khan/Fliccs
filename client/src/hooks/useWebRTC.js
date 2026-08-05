@@ -428,6 +428,13 @@ function useWebRTC({
         console.log(`[WebRTC Guest] Offer from ${fromUserId} arrived while mode='${sessionMode}' — accepting anyway (mode sync race).`);
       }
 
+      const existing = peerConnections.current.get(fromUserId);
+      const ice = existing?.iceConnectionState;
+      if (existing && (ice === 'connected' || ice === 'completed' || ice === 'checking')) {
+        console.log(`[WebRTC Guest] Ignoring duplicate offer from ${fromUserId} — connection already ${ice}.`);
+        return;
+      }
+
       console.log(`[WebRTC Guest] Received offer from host ${fromUserId}`);
       clearError();
       const pc = createPeerConnection(fromUserId); // fromUserId is the host's ID
@@ -610,20 +617,25 @@ function useWebRTC({
   }, [participants, isHost, isStreamingActive, selfId, socket, createPeerConnection, closePeerConnection]);
 
   // --- Guest: if we enter stream mode with no remote stream, ask host to re-offer ---
+  const remoteStreamRef = useRef(remoteStream);
+  remoteStreamRef.current = remoteStream;
+
   useEffect(() => {
-    if (isHost || sessionMode !== 'stream' || !socket?.connected || remoteStream) return;
+    if (isHost || sessionMode !== 'stream' || !socket?.connected) return;
+    if (remoteStreamRef.current) return;
 
     const hostId = participants[0]?.id;
     if (!hostId || hostId === selfId) return;
 
     const timer = setTimeout(() => {
-      if (remoteStream) return;
+      // Use ref so we don't re-request after a stream already arrived
+      if (remoteStreamRef.current) return;
       console.log(`[WebRTC Guest] Still waiting for stream — requesting offer from host ${hostId}`);
       socket.emit('webrtc:request-offer', { targetUserId: hostId });
-    }, 800);
+    }, 1500);
 
     return () => clearTimeout(timer);
-  }, [isHost, sessionMode, socket, remoteStream, participants, selfId]);
+  }, [isHost, sessionMode, socket, participants, selfId]);
 
   // --- Host: fulfill guest offer requests ---
   useEffect(() => {
@@ -634,10 +646,17 @@ function useWebRTC({
         console.warn(`[WebRTC Host] Offer requested by ${fromUserId} but streaming is not active yet.`);
         return;
       }
-      console.log(`[WebRTC Host] Guest ${fromUserId} requested an offer — (re)negotiating.`);
 
-      // Tear down any half-open PC so we send a fresh offer
-      if (peerConnections.current.has(fromUserId)) {
+      const existing = peerConnections.current.get(fromUserId);
+      const state = existing?.iceConnectionState;
+      if (existing && (state === 'connected' || state === 'completed' || state === 'checking')) {
+        console.log(`[WebRTC Host] Ignoring offer request from ${fromUserId} — connection already ${state}.`);
+        return;
+      }
+
+      console.log(`[WebRTC Host] Guest ${fromUserId} requested an offer — (re)negotiating (prior state=${state || 'none'}).`);
+
+      if (existing) {
         closePeerConnection(fromUserId);
       }
 
@@ -694,16 +713,22 @@ function useWebRTC({
         }
     }, [sessionMode, isHost, isStreamingActive, stopStreaming]);
 
-    // --- Effect to clear remote stream if mode changes away from 'stream' (Guest only) ---
-     useEffect(() => {
-        if (!isHost && sessionMode === 'sync' && remoteStream) {
-            console.log("[useWebRTC Guest] Mode changed to sync. Clearing remote stream and closing connections.");
+    // --- Effect to clear remote stream only when mode transitions stream → sync (Guest) ---
+    // IMPORTANT: Do NOT clear merely because remoteStream arrived while mode is still 'sync'.
+    // Host offers often beat session:participants; we accept them in sync, then mode flips to stream.
+    // The old effect treated "sync + remoteStream" as "left stream mode" and killed the live PC.
+    const prevSessionModeRef = useRef(sessionMode);
+    useEffect(() => {
+        const prevMode = prevSessionModeRef.current;
+        prevSessionModeRef.current = sessionMode;
+
+        if (isHost) return;
+        if (prevMode === 'stream' && sessionMode === 'sync') {
+            console.log("[useWebRTC Guest] Mode transitioned stream → sync. Clearing remote stream and closing connections.");
             setRemoteStream(null);
-            // Connections should ideally be closed by the host stopping the stream,
-            // but guests can also proactively close their side.
-             closeAllConnections();
+            closeAllConnections();
         }
-    }, [sessionMode, isHost, remoteStream, closeAllConnections]);
+    }, [sessionMode, isHost, closeAllConnections]);
 
 
   // --- Return Values ---

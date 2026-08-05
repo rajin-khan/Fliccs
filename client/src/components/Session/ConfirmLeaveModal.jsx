@@ -8,7 +8,7 @@ function ConfirmLeaveModal({ isOpen, onConfirm, onCancel }) {
     return createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4 animate-fade-in">
             <div
-                className="animate-fade-in-up bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 w-full max-w-sm text-center text-white font-barlow relative overflow-hidden shadow-2xl"
+                className="animate-fade-in-up bg-[#0a0a12] border border-white/10 rounded-2xl p-8 w-full max-w-sm text-center text-white font-barlow relative overflow-hidden shadow-2xl"
             >
                 {/* Ambient Red Glow for Danger Context */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-[60px] rounded-full pointer-events-none" />

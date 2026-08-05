@@ -1,48 +1,52 @@
 import React from 'react';
 
-// Simplified to only handle mode display and toggle
+/**
+ * Session mode control.
+ * Host: segmented Sync / Stream switch (emits `session:set_mode`).
+ * Guest: read-only pill showing the current mode.
+ */
 function SessionInfo({ socket, sessionMode, isHost }) {
 
-  const handleModeToggle = () => {
-    if (!socket || !isHost) return;
-    const newMode = sessionMode === 'sync' ? 'stream' : 'sync';
-    socket.emit('session:set_mode', { mode: newMode });
+  const setMode = (mode) => {
+    if (!socket || !isHost || mode === sessionMode) return;
+    socket.emit('session:set_mode', { mode });
   };
 
-  const ToggleSwitch = ({ enabled, onChange }) => (
-    <button
-      type="button"
-      onClick={onChange}
-      className={`${enabled ? 'bg-brand-accent' : 'bg-gray-600'} relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none`}
-      role="switch"
-      aria-checked={enabled}
-    >
-      <span className="sr-only">Toggle Mode</span>
-      <span
-        className={`${enabled ? 'translate-x-5' : 'translate-x-1'} inline-block w-3 h-3 transform bg-white rounded-full transition-transform`}
-      />
-    </button>
-  );
-
-  const modeDisplayText = sessionMode === 'sync' ? 'Sync' : 'Stream';
+  if (!isHost) {
+    return (
+      <div
+        className="flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10"
+        title={`Session mode: ${sessionMode}`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${sessionMode === 'stream' ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-brand-primary'}`} />
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-white/70 capitalize">
+          {sessionMode}
+        </span>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex items-center gap-3 flex-wrap">
-      {/* Mode Display */}
-      <div
-        className="text-sm px-3 py-1 rounded-full border border-brand-tekhelet text-brand-tekhelet font-medium whitespace-nowrap"
-        title={`Current session mode is ${modeDisplayText}`}
-      >
-        Mode: <span className="font-semibold capitalize">{modeDisplayText}</span>
-      </div>
-
-      {/* Host Only: Toggle */}
-      {isHost && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 italic">Toggle:</span>
-          <ToggleSwitch enabled={sessionMode === 'stream'} onChange={handleModeToggle} />
-        </div>
-      )}
+    <div
+      className="flex items-center h-9 p-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10"
+      role="group"
+      aria-label="Session mode"
+    >
+      {['sync', 'stream'].map((mode) => {
+        const active = sessionMode === mode;
+        return (
+          <button
+            key={mode}
+            onClick={() => setMode(mode)}
+            aria-pressed={active}
+            className={`h-7 px-3 rounded-full text-[11px] font-semibold uppercase tracking-wider transition-all active:scale-[0.97] ${active
+              ? 'bg-brand-primary text-white shadow-[0_0_16px_-4px_rgba(100,53,172,0.8)]'
+              : 'text-white/40 hover:text-white/80'}`}
+          >
+            {mode}
+          </button>
+        );
+      })}
     </div>
   );
 }

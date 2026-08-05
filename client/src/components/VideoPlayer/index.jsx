@@ -1,10 +1,10 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import ReactPlayer from 'react-player';
+import { FaFolderOpen, FaFilm, FaSatelliteDish, FaExclamationTriangle, FaExchangeAlt } from 'react-icons/fa';
 import useVideoSync from './useVideoSync';
 import useWebRTC from '../../hooks/useWebRTC';
 import { calculateFileHash } from '../../utils/fileHash.js';
 import PlayerControls from './PlayerControls';
-import BrandLogo from '../BrandLogo';
 
 function VideoPlayer({
     socket,
@@ -12,13 +12,14 @@ function VideoPlayer({
     sessionMode,
     isHost,
     participants,
-    selfId
+    selfId,
+    isFullscreen,
+    onToggleFullscreen,
 }) {
     // Get host nickname for display
-    const hostParticipant = participants.find(p => participants.indexOf(p) === 0);
+    const hostParticipant = participants[0];
     const hostName = hostParticipant?.nickname || 'Host';
     const playerRef = useRef(null);
-    const playerWrapperRef = useRef(null);
     const videoElementRef = useRef(null);
     const guestVideoRef = useRef(null);
     const seekingRef = useRef(false);
@@ -33,7 +34,6 @@ function VideoPlayer({
         loadedSeconds: 0,
         duration: 0,
     });
-    const [isFullscreen, setIsFullscreen] = useState(false);
 
     // State for file handling
     const [localVideoURL, setLocalVideoURL] = useState(null);
@@ -171,24 +171,7 @@ function VideoPlayer({
         setPlayerState(prev => ({ ...prev, duration }));
     };
 
-    const handleToggleFullscreen = () => {
-        if (!playerWrapperRef.current) return;
-        if (!document.fullscreenElement) {
-            playerWrapperRef.current.requestFullscreen().catch(err => {
-                console.error(`Failed to enter fullscreen: ${err.message}`);
-            });
-        } else {
-            document.exitFullscreen();
-        }
-    };
-
     // --- Effects ---
-
-    useEffect(() => {
-        const onFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
-        document.addEventListener('fullscreenchange', onFullscreenChange);
-        return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
-    }, []);
 
     useEffect(() => {
         if (sessionMode !== 'sync' || !socket) return;
@@ -224,7 +207,7 @@ function VideoPlayer({
         setErrorMessage('');
         setPlayerState(prev => ({ ...prev, isPlaying: false, playedSeconds: 0, loadedSeconds: 0, duration: 0 }));
 
-        // ** FIX: Auto-play for host in stream mode to enable captureStream **
+        // Auto-play for host in stream mode to enable captureStream
         if (isHost && sessionMode === 'stream') {
             setPlayerState(prev => ({ ...prev, isPlaying: true }));
         }
@@ -323,9 +306,9 @@ function VideoPlayer({
     const getStatusBadge = () => {
         if (sessionMode !== 'sync') return null;
         switch (fileStatus) {
-            case 'matched': return <span className="text-[10px] bg-green-500/10 text-green-400 px-1.5 py-0.5 rounded border border-green-500/20">MATCH</span>;
-            case 'mismatched': return <span className="text-[10px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded border border-red-500/20">MISMATCH</span>;
-            case 'pending': return <span className="text-[10px] text-yellow-400">•••</span>;
+            case 'matched': return <span className="text-[9px] font-bold bg-green-500/10 text-green-400 px-1.5 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Match</span>;
+            case 'mismatched': return <span className="text-[9px] font-bold bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded-full border border-red-500/20 uppercase tracking-wider">Mismatch</span>;
+            case 'pending': return <span className="text-[9px] text-yellow-400 font-bold tracking-widest">•••</span>;
             default: return null;
         }
     };
@@ -344,340 +327,256 @@ function VideoPlayer({
     const showReactPlayer = videoSource !== null && !isGuestLiveStream;
     const showGuestStream = isGuestLiveStream;
 
-    return (
-        <div className="w-full h-full flex flex-col items-center justify-center font-barlow text-white px-2">
-            {/* Desktop File Input (Above Player) */}
-            {showFileInput && (
-                <div className="hidden lg:block w-full max-w-2xl mb-6 z-30 animate-fade-in-up">
-                    <div className="bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative group hover:border-brand-primary/30 transition-all duration-300">
-                        <div className="absolute inset-0 bg-brand-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+    // Shared overlay elements ------------------------------------------------
 
-                        {!fileName ? (
-                            <div className="p-1">
-                                <label className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-white/10 hover:border-brand-primary/50 hover:bg-white/5 cursor-pointer transition-all duration-300 group/drop">
-                                    <div className="w-10 h-10 shrink-0 rounded-lg bg-brand-primary/10 flex items-center justify-center group-hover/drop:scale-110 transition-transform duration-300 shadow-[0_0_15px_-5px_rgba(100,53,172,0.3)]">
-                                        <span className="text-xl filter drop-shadow-lg">📂</span>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="text-white font-bold text-sm tracking-tight group-hover/drop:text-brand-primary transition-colors">Select Video File</h3>
-                                        <p className="text-gray-400 text-[10px] truncate">Tap to browse local files</p>
-                                    </div>
-                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 group-hover/drop:bg-brand-primary group-hover/drop:text-white transition-all">
-                                        <span className="text-xs">➜</span>
-                                    </div>
-                                    <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" key={`${sessionMode}-${fileName}`} />
-                                </label>
-                            </div>
+    const liveBadge = (
+        <div className={`absolute top-16 left-3 sm:left-4 z-20 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 border border-emerald-500/20 backdrop-blur-md shadow-sm">
+                <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </div>
+                <span className="text-[10px] font-semibold text-white/90 tracking-widest uppercase">
+                    Live <span className="mx-1 text-white/20">|</span> {hostName}
+                </span>
+            </div>
+        </div>
+    );
+
+    // Compact file chip shown once a video is loaded (all breakpoints)
+    const fileChip = showFileInput && localVideoURL && (
+        <div className={`absolute top-16 left-1/2 -translate-x-1/2 z-20 max-w-[calc(100%-1.5rem)] transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+            <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/10 pl-4 pr-1.5 py-1.5 rounded-full shadow-lg">
+                <FaFilm className="text-brand-primary/80 text-xs shrink-0" />
+                <div className="flex flex-col items-start min-w-0">
+                    <span className="text-[11px] font-semibold text-white max-w-[140px] sm:max-w-[240px] truncate leading-tight" title={fileName}>
+                        {fileName}
+                    </span>
+                    <div className="flex items-center gap-1.5 leading-tight">
+                        {sessionMode === 'sync' ? (
+                            <>
+                                {getStatusBadge()}
+                                <span className="text-[9px] text-gray-500 font-mono">
+                                    {fileHash ? `#${fileHash.slice(0, 8)}` : 'hashing...'}
+                                </span>
+                            </>
                         ) : (
-                            <div className="p-4 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-brand-primary/20 flex items-center justify-center text-2xl shrink-0">
-                                    🎬
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="text-white font-medium truncate" title={fileName}>{fileName}</h4>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        {sessionMode === 'sync' && getStatusBadge()}
-                                        {sessionMode === 'sync' && (
-                                            <p className="text-[10px] text-gray-500 font-mono">
-                                                {fileHash ? `#${fileHash.slice(0, 8)}` : 'Hash Pending...'}
-                                            </p>
-                                        )}
-                                        {sessionMode === 'stream' && (
-                                            <p className="text-[10px] text-brand-primary/70 uppercase tracking-wider">Broadcasting</p>
-                                        )}
-                                    </div>
-                                </div>
-                                <label className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-white cursor-pointer transition-colors shrink-0">
-                                    Change
-                                    <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
-                                </label>
-                            </div>
-                        )}
-
-                        {/* Error Message Footer */}
-                        {sessionMode === 'sync' && fileStatus === 'mismatched' && (
-                            <div className="bg-red-500/10 border-t border-red-500/20 px-4 py-2 text-xs text-red-300 text-center font-medium flex items-center justify-center gap-2">
-                                <span>⚠️</span> {errorMessage}
-                            </div>
+                            <span className="text-[9px] text-brand-primary/80 font-bold uppercase tracking-widest">Broadcasting</span>
                         )}
                     </div>
                 </div>
-            )}
-            {(errorMessage || webRTCError) && (
-                <div className="w-full max-w-md my-4 text-center text-red-300 text-sm font-medium bg-red-950/50 border border-red-500/30 rounded-xl p-4 shadow-lg backdrop-blur-sm">
-                    <p>⚠️ {webRTCError || errorMessage}</p>
+                <label className="shrink-0 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-full cursor-pointer transition-colors">
+                    <FaExchangeAlt className="text-[9px]" />
+                    <span className="hidden sm:inline">Change</span>
+                    <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
+                </label>
+            </div>
+        </div>
+    );
+
+    const errorToast = (errorMessage || webRTCError) && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-2rem)] max-w-md">
+            <div className="flex items-center justify-center gap-2 text-red-300 text-xs sm:text-sm font-medium bg-red-950/70 border border-red-500/30 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md text-center">
+                <FaExclamationTriangle className="shrink-0" />
+                <span>{webRTCError || errorMessage}</span>
+            </div>
+        </div>
+    );
+
+    const loadingOverlay = !isPlayerReady && !webRTCError && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="w-10 h-10 border-2 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin mb-3"></div>
+            <span className="text-xs font-medium text-white/50 tracking-widest uppercase">Loading video...</span>
+        </div>
+    );
+
+    // Empty-state dropzone (sync: everyone, stream: host)
+    const dropzone = (
+        <div className="w-full max-w-sm px-6 relative z-10 animate-fade-in-up text-center">
+            <label className="group/drop block cursor-pointer">
+                <div className="flex flex-col items-center gap-4 p-8 sm:p-10 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] hover:border-brand-primary/50 hover:bg-brand-primary/5 transition-all duration-300">
+                    <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center group-hover/drop:scale-110 transition-transform duration-300 shadow-[0_0_40px_-10px_rgba(100,53,172,0.4)]">
+                        {sessionMode === 'stream'
+                            ? <FaSatelliteDish className="text-2xl text-brand-primary" />
+                            : <FaFolderOpen className="text-2xl text-brand-primary" />}
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="text-xl text-white font-medium tracking-tight group-hover/drop:text-brand-primary transition-colors">
+                            {sessionMode === 'stream' ? 'Start your stream' : 'Select a video'}
+                        </h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">
+                            {sessionMode === 'stream'
+                                ? 'Pick a local file to broadcast live to everyone in the room.'
+                                : 'Pick a local file to sync playback with the room.'}
+                        </p>
+                    </div>
+                    <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-brand-primary text-white text-xs font-semibold uppercase tracking-wider group-hover/drop:bg-brand-primary/80 transition-colors">
+                        Browse files
+                    </span>
+                </div>
+                <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" key={`${sessionMode}-${fileName}`} />
+            </label>
+        </div>
+    );
+
+    return (
+        <div className="relative w-full h-full bg-black text-white font-barlow flex items-center justify-center overflow-hidden">
+            {/* Ambient glow behind empty states */}
+            {!showPlayerContainer && (
+                <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-brand-primary/[0.06] blur-[100px] rounded-full" />
                 </div>
             )}
 
-            <div ref={playerWrapperRef} className={`relative bg-black flex items-center justify-center group overflow-hidden transition-all duration-300 ${isFullscreen ? 'w-full h-full rounded-none' : 'w-full max-w-6xl aspect-video rounded-[2.5rem] border border-white/10 shadow-[0_0_80px_-20px_rgba(0,0,0,0.8)] ring-1 ring-white/5'}`}>
-                {/* Ambient Player Glow */}
-                <div className="absolute inset-0 bg-brand-primary/5 pointer-events-none opacity-50" />
+            {errorToast}
 
-                {showPlayerContainer ? (
-                    showGuestStream ? (
-                        <>
-                            <video
-                                ref={guestVideoRef}
-                                autoPlay
-                                playsInline
-                                muted={isGuestMuted}
-                                className="w-full h-full object-contain bg-black"
-                                style={{ borderRadius: isFullscreen ? '0px' : '2.5rem' }}
-                            />
-
-                            {!isPlayerReady && !webRTCError && (
-                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm rounded-[2.5rem]">
-                                    <div className="w-10 h-10 border-2 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin mb-3"></div>
-                                    <span className="text-xs font-medium text-white/50 tracking-wider">LOADING VIDEO...</span>
-                                </div>
-                            )}
-
-                            <div className={`absolute top-6 left-6 z-20 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-green-500/20 backdrop-blur-md shadow-sm">
-                                    <div className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                                    </div>
-                                    <span className="text-[10px] font-medium text-white/90 tracking-widest uppercase">
-                                        LIVE <span className="mx-1 text-white/20">|</span> {hostName}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className={`absolute top-6 right-6 z-20 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-                                <div className="bg-black/60 backdrop-blur-md border border-brand-primary/30 rounded-full px-3 py-1.5 shadow-lg flex items-center justify-center">
-                                    <BrandLogo size="sm" />
-                                </div>
-                            </div>
-
-                            <div
-                                className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 cursor-none'}`}
-                                onMouseMove={handlePlayerInteraction}
-                                onMouseEnter={handlePlayerInteraction}
-                                onClick={handlePlayerInteraction}
-                            >
-                                <div className={`${showControls ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-                                    <PlayerControls
-                                        isPlaying={true}
-                                        onPlayPause={() => {
-                                            const el = guestVideoRef.current;
-                                            if (!el) return;
-                                            if (el.paused) el.play().catch(() => {});
-                                            else el.pause();
-                                        }}
-                                        volume={playerState.volume}
-                                        onVolumeChange={handleVolumeChange}
-                                        isMuted={isGuestMuted}
-                                        onMuteToggle={() => setIsGuestMuted(!isGuestMuted)}
-                                        playedSeconds={0}
-                                        loadedSeconds={0}
-                                        duration={0}
-                                        onSeek={() => {}}
-                                        onSeekMouseDown={() => {}}
-                                        onSeekMouseUp={() => {}}
-                                        onSkipForward={() => {}}
-                                        onSkipBackward={() => {}}
-                                        isHost={false}
-                                        sessionMode="stream"
-                                        isFullscreen={isFullscreen}
-                                        onToggleFullscreen={handleToggleFullscreen}
-                                    />
-                                </div>
-                            </div>
-                        </>
-                    ) : showReactPlayer ? (
-                        <>
-                            <ReactPlayer
-                                ref={playerRef}
-                                url={videoSource}
-                                width="100%"
-                                height="100%"
-                                playing={sessionMode === 'stream' && !isHost ? true : playerState.isPlaying}
-                                volume={playerState.volume}
-                                muted={sessionMode === 'stream' && !isHost ? isGuestMuted : playerState.isMuted}
-                                onReady={handlePlayerReady}
-                                onError={handlePlayerError}
-                                onPlay={() => {
-                                    if (!isUserControllingRef.current && !syncLock.current) {
-                                        setPlayerState(p => ({ ...p, isPlaying: true }));
-                                    }
-                                }}
-                                onPause={() => {
-                                    if (!isUserControllingRef.current && !syncLock.current) {
-                                        setPlayerState(p => ({ ...p, isPlaying: false }));
-                                    }
-                                }}
-                                onProgress={handleProgress}
-                                onDuration={handleDuration}
-                                playsInline={true}
-                                config={{ file: { attributes: { playsInline: true } } }}
-                                style={{ borderRadius: isFullscreen ? '0px' : '2.5rem', overflow: 'hidden' }}
-                                controls={false}
-                            />
-
-                            {/* Loading Overlay */}
-                            {!isPlayerReady && !webRTCError && (
-                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm rounded-[2.5rem]">
-                                    <div className="w-10 h-10 border-2 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin mb-3"></div>
-                                    <span className="text-xs font-medium text-white/50 tracking-wider">LOADING VIDEO...</span>
-                                </div>
-                            )}
-
-                            {/* File Info Overlay (Active) - Mobile Only */}
-                            {showFileInput && localVideoURL && (
-                                <div className={`lg:hidden absolute top-20 left-1/2 transform -translate-x-1/2 z-30 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-                                    <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/10 pr-2 pl-4 py-1.5 rounded-full shadow-lg">
-                                        <div className="flex flex-col items-start min-w-0">
-                                            <span className="text-[10px] font-bold text-white max-w-[120px] truncate">{fileName}</span>
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="text-[9px] text-gray-400 font-mono">
-                                                    {sessionMode === 'sync'
-                                                        ? (fileHash ? `#${fileHash.slice(0, 8)}` : '...')
-                                                        : 'LIVE'}
-                                                </span>
-                                                {sessionMode === 'sync' && fileStatus === 'mismatched' && (
-                                                    <span className="text-[8px] bg-red-500/20 text-red-400 px-1 rounded border border-red-500/20">MISMATCH</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <label className="shrink-0 text-[10px] bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full cursor-pointer transition-colors border border-white/5">
-                                            Change
-                                            <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
-                                        </label>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Stream Guest Overlay */}
-                            {sessionMode === 'stream' && !isHost && (
-                                <div className={`absolute top-6 left-6 z-20 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-                                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-green-500/20 backdrop-blur-md shadow-sm">
-                                        <div className="relative flex h-2 w-2">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                                        </div>
-                                        <span className="text-[10px] font-medium text-white/90 tracking-widest uppercase">
-                                            LIVE <span className="mx-1 text-white/20">|</span> {hostName}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Logo Overlay */}
-                            <div className={`absolute top-6 right-6 z-20 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-                                <div className="bg-black/60 backdrop-blur-md border border-brand-primary/30 rounded-full px-3 py-1.5 shadow-lg flex items-center justify-center">
-                                    <BrandLogo size="sm" />
-                                </div>
-                            </div>
-
-                            {/* Controls Overlay */}
-                            <div
-                                className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 cursor-none'}`}
-                                onMouseMove={handlePlayerInteraction}
-                                onMouseEnter={handlePlayerInteraction}
-                                onClick={handlePlayerInteraction}
-                            >
-                                <div className={`${showControls ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-                                    <PlayerControls
-                                        isPlaying={playerState.isPlaying}
-                                        onPlayPause={handlePlayPause}
-                                        volume={playerState.volume}
-                                        onVolumeChange={handleVolumeChange}
-                                        isMuted={sessionMode === 'stream' && !isHost ? isGuestMuted : playerState.isMuted}
-                                        onMuteToggle={sessionMode === 'stream' && !isHost ? () => setIsGuestMuted(!isGuestMuted) : handleMuteToggle}
-                                        playedSeconds={playerState.playedSeconds}
-                                        loadedSeconds={playerState.loadedSeconds}
-                                        duration={playerState.duration}
-                                        onSeek={handleSeek}
-                                        onSeekMouseDown={(e) => {
-                                            handleSeekMouseDown();
-                                            resetControlsTimer(); // Keep controls visible while seeking
-                                        }}
-                                        onSeekMouseUp={handleSeekMouseUp}
-                                        onSkipForward={handleSkipForward}
-                                        onSkipBackward={handleSkipBackward}
-                                        isHost={isHost}
-                                        sessionMode={sessionMode}
-                                        isFullscreen={isFullscreen}
-                                        onToggleFullscreen={handleToggleFullscreen}
-                                    />
-                                </div>
-                            </div>
-                        </>
-                    ) : (
-                        !webRTCError && sessionMode === 'stream' && !isHost ? (
-                            <div className="flex flex-col items-center gap-6 p-8 animate-pulse">
-                                <div className="w-20 h-20 rounded-full border-2 border-brand-primary/20 border-t-brand-primary animate-spin"></div>
-                                <div className="text-center space-y-2">
-                                    <p className="text-white text-lg font-medium tracking-wide">Establishing Connection...</p>
-                                    <p className="text-brand-primary/60 text-sm uppercase tracking-widest">Waiting for host stream</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center gap-4 text-gray-400">
-                                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
-                                    <span className="text-2xl">⏳</span>
-                                </div>
-                                <p className="text-sm">Initializing Player...</p>
-                            </div>
-                        )
-                    )
-                ) : (
+            {showPlayerContainer ? (
+                showGuestStream ? (
                     <>
-                        {showFileInput && !localVideoURL && (
-                            <div className="w-full max-w-sm px-4 relative z-10 animate-fade-in-up lg:hidden">
-                                <div className="bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl group hover:border-brand-primary/30 transition-all duration-300">
-                                    <div className="p-1">
-                                        <label className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-white/10 hover:border-brand-primary/50 hover:bg-white/5 cursor-pointer transition-all duration-300 group/drop">
-                                            <div className="w-10 h-10 shrink-0 rounded-lg bg-brand-primary/10 flex items-center justify-center group-hover/drop:scale-110 transition-transform duration-300 shadow-[0_0_15px_-5px_rgba(100,53,172,0.3)]">
-                                                <span className="text-xl filter drop-shadow-lg">📂</span>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="text-white font-bold text-sm tracking-tight group-hover/drop:text-brand-primary transition-colors">Select Video File</h3>
-                                                <p className="text-gray-400 text-[10px] truncate">Tap to browse local files</p>
-                                            </div>
-                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 group-hover/drop:bg-brand-primary group-hover/drop:text-white transition-all">
-                                                <span className="text-xs">➜</span>
-                                            </div>
-                                            <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
-                                        </label>
-                                    </div>
-                                </div>
-                                <div className="mt-4 text-center">
-                                    <p className="text-gray-500 text-[10px] max-w-[200px] mx-auto leading-relaxed">
-                                        {sessionMode === 'stream' ? 'Select a file to start broadcasting.' : 'Choose a file to sync with the room.'}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+                        <video
+                            ref={guestVideoRef}
+                            autoPlay
+                            playsInline
+                            muted={isGuestMuted}
+                            className="w-full h-full object-contain bg-black"
+                        />
 
-                        {/* Desktop Empty State Placeholder (Select Video Instruction) */}
-                        {sessionMode === 'sync' && !localVideoURL && (
-                            <div className="hidden lg:flex flex-col items-center gap-5 p-8 text-center max-w-sm">
-                                <div className="w-24 h-24 rounded-[2rem] bg-brand-primary/5 flex items-center justify-center border border-brand-primary/20 shadow-[0_0_40px_-10px_rgba(100,53,172,0.3)]">
-                                    <span className="text-5xl opacity-80">🎬</span>
-                                </div>
-                                <h3 className="text-2xl text-white font-medium">Select Video</h3>
-                                <p className="text-gray-400 text-sm leading-relaxed">
-                                    Choose a local video file above to sync playback with others.
-                                </p>
+                        {loadingOverlay}
+                        {liveBadge}
+
+                        <div
+                            className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 cursor-none'}`}
+                            onMouseMove={handlePlayerInteraction}
+                            onMouseEnter={handlePlayerInteraction}
+                            onClick={handlePlayerInteraction}
+                        >
+                            <div className={`${showControls ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+                                <PlayerControls
+                                    isPlaying={true}
+                                    onPlayPause={() => {
+                                        const el = guestVideoRef.current;
+                                        if (!el) return;
+                                        if (el.paused) el.play().catch(() => {});
+                                        else el.pause();
+                                    }}
+                                    volume={playerState.volume}
+                                    onVolumeChange={handleVolumeChange}
+                                    isMuted={isGuestMuted}
+                                    onMuteToggle={() => setIsGuestMuted(!isGuestMuted)}
+                                    playedSeconds={0}
+                                    loadedSeconds={0}
+                                    duration={0}
+                                    onSeek={() => {}}
+                                    onSeekMouseDown={() => {}}
+                                    onSeekMouseUp={() => {}}
+                                    onSkipForward={() => {}}
+                                    onSkipBackward={() => {}}
+                                    isHost={false}
+                                    sessionMode="stream"
+                                    isFullscreen={isFullscreen}
+                                    onToggleFullscreen={onToggleFullscreen}
+                                    isLiveStream={true}
+                                />
                             </div>
-                        )}
-                        {sessionMode === 'stream' && isHost && !localVideoURL && (
-                            <div className="hidden lg:flex flex-col items-center gap-5 p-8 text-center max-w-sm">
-                                <div className="w-24 h-24 rounded-[2rem] bg-brand-primary/5 flex items-center justify-center border border-brand-primary/20 shadow-[0_0_40px_-10px_rgba(100,53,172,0.3)]">
-                                    <span className="text-5xl opacity-80">📡</span>
-                                </div>
-                                <h3 className="text-2xl text-white font-medium">Start Stream</h3>
-                                <p className="text-gray-400 text-sm leading-relaxed">
-                                    Select a video file above to broadcast directly to your guests.
-                                </p>
-                            </div>
-                        )}
+                        </div>
                     </>
-                )}
-            </div>
-        </div >
+                ) : showReactPlayer ? (
+                    <>
+                        <ReactPlayer
+                            ref={playerRef}
+                            url={videoSource}
+                            width="100%"
+                            height="100%"
+                            playing={sessionMode === 'stream' && !isHost ? true : playerState.isPlaying}
+                            volume={playerState.volume}
+                            muted={sessionMode === 'stream' && !isHost ? isGuestMuted : playerState.isMuted}
+                            onReady={handlePlayerReady}
+                            onError={handlePlayerError}
+                            onPlay={() => {
+                                if (!isUserControllingRef.current && !syncLock.current) {
+                                    setPlayerState(p => ({ ...p, isPlaying: true }));
+                                }
+                            }}
+                            onPause={() => {
+                                if (!isUserControllingRef.current && !syncLock.current) {
+                                    setPlayerState(p => ({ ...p, isPlaying: false }));
+                                }
+                            }}
+                            onProgress={handleProgress}
+                            onDuration={handleDuration}
+                            playsInline={true}
+                            config={{ file: { attributes: { playsInline: true } } }}
+                            controls={false}
+                        />
+
+                        {loadingOverlay}
+                        {fileChip}
+
+                        {/* Live badge for stream-mode guests still on ReactPlayer path */}
+                        {sessionMode === 'stream' && !isHost && liveBadge}
+
+                        {/* Controls overlay */}
+                        <div
+                            className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 cursor-none'}`}
+                            onMouseMove={handlePlayerInteraction}
+                            onMouseEnter={handlePlayerInteraction}
+                            onClick={handlePlayerInteraction}
+                        >
+                            <div className={`${showControls ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+                                <PlayerControls
+                                    isPlaying={playerState.isPlaying}
+                                    onPlayPause={handlePlayPause}
+                                    volume={playerState.volume}
+                                    onVolumeChange={handleVolumeChange}
+                                    isMuted={sessionMode === 'stream' && !isHost ? isGuestMuted : playerState.isMuted}
+                                    onMuteToggle={sessionMode === 'stream' && !isHost ? () => setIsGuestMuted(!isGuestMuted) : handleMuteToggle}
+                                    playedSeconds={playerState.playedSeconds}
+                                    loadedSeconds={playerState.loadedSeconds}
+                                    duration={playerState.duration}
+                                    onSeek={handleSeek}
+                                    onSeekMouseDown={() => {
+                                        handleSeekMouseDown();
+                                        resetControlsTimer(); // Keep controls visible while seeking
+                                    }}
+                                    onSeekMouseUp={handleSeekMouseUp}
+                                    onSkipForward={handleSkipForward}
+                                    onSkipBackward={handleSkipBackward}
+                                    isHost={isHost}
+                                    sessionMode={sessionMode}
+                                    isFullscreen={isFullscreen}
+                                    onToggleFullscreen={onToggleFullscreen}
+                                />
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    !webRTCError && sessionMode === 'stream' && !isHost ? (
+                        <div className="flex flex-col items-center gap-6 p-8 relative z-10">
+                            <div className="w-16 h-16 rounded-full border-2 border-brand-primary/20 border-t-brand-primary animate-spin"></div>
+                            <div className="text-center space-y-1.5">
+                                <p className="text-white text-lg font-medium tracking-wide">Connecting to {hostName}...</p>
+                                <p className="text-brand-primary/60 text-xs uppercase tracking-widest">Waiting for the host stream</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center gap-4 text-gray-400 relative z-10">
+                            <div className="w-10 h-10 border-2 border-white/10 border-t-white/50 rounded-full animate-spin"></div>
+                            <p className="text-sm tracking-wide">Initializing player...</p>
+                        </div>
+                    )
+                )
+            ) : (
+                <>
+                    {showFileInput && !localVideoURL && dropzone}
+                    {!showFileInput && (
+                        <div className="flex flex-col items-center gap-4 text-gray-400 relative z-10">
+                            <div className="w-10 h-10 border-2 border-white/10 border-t-white/50 rounded-full animate-spin"></div>
+                            <p className="text-sm tracking-wide">Waiting for the session...</p>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
     );
 }
 

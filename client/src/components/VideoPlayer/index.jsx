@@ -257,12 +257,6 @@ function VideoPlayer({
                     if (typeof internalPlayer.setAttribute === 'function') {
                         internalPlayer.setAttribute('playsinline', 'true');
                     }
-                    // MediaStream playback sometimes needs an explicit play() after srcObject bind
-                    if (remoteStream && internalPlayer.paused) {
-                        internalPlayer.play().catch((err) => {
-                            console.warn('[VideoPlayer] Autoplay after MediaStream bind failed:', err?.message || err);
-                        });
-                    }
                 } else { videoElementRef.current = null; }
             } else { videoElementRef.current = null; }
         } catch (error) {
@@ -270,7 +264,7 @@ function VideoPlayer({
             setIsPlayerReady(false);
             videoElementRef.current = null;
         }
-    }, [remoteStream]);
+    }, []);
 
     // Guest stream arrived — don't leave the LOADING overlay up if onReady is slow/missing
     useEffect(() => {

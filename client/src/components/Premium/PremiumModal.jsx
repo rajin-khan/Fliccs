@@ -136,7 +136,7 @@ export default function PremiumModal({ isOpen, onClose }) {
                                 </button>
                             </div>
                             <p className="mt-4 text-center text-[10px] text-white/30 uppercase tracking-widest font-medium">
-                                Expected Launch: February 2026
+                                Expected Launch: August 2026
                             </p>
                         </div>
                     </div>

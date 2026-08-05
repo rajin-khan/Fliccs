@@ -327,22 +327,6 @@ function VideoPlayer({
     const showReactPlayer = videoSource !== null && !isGuestLiveStream;
     const showGuestStream = isGuestLiveStream;
 
-    // Shared overlay elements ------------------------------------------------
-
-    const liveBadge = (
-        <div className={`absolute top-16 left-3 sm:left-4 z-20 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 border border-emerald-500/20 backdrop-blur-md shadow-sm">
-                <div className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </div>
-                <span className="text-[10px] font-semibold text-white/90 tracking-widest uppercase">
-                    Live <span className="mx-1 text-white/20">|</span> {hostName}
-                </span>
-            </div>
-        </div>
-    );
-
     // Compact file chip shown once a video is loaded (all breakpoints)
     const fileChip = showFileInput && localVideoURL && (
         <div className={`absolute top-16 left-1/2 -translate-x-1/2 z-20 max-w-[calc(100%-1.5rem)] transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
@@ -442,7 +426,6 @@ function VideoPlayer({
                         />
 
                         {loadingOverlay}
-                        {liveBadge}
 
                         <div
                             className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 cursor-none'}`}
@@ -511,9 +494,6 @@ function VideoPlayer({
 
                         {loadingOverlay}
                         {fileChip}
-
-                        {/* Live badge for stream-mode guests still on ReactPlayer path */}
-                        {sessionMode === 'stream' && !isHost && liveBadge}
 
                         {/* Controls overlay */}
                         <div

@@ -166,7 +166,7 @@ Do this only after Phase B is green.
 - [x] GitHub repo renamed to `rajin-khan/Fliccs`
 - [x] Local folder `ACTIVE/FLICCS`; TURN script → `scripts/fliccs.sh`
 - [ ] Portfolio / Ko-fi (deferred)
-- [ ] README live link → `https://fliccs.up.railway.app` (if not already)
+- [x] README live link → `https://fliccs.up.railway.app`
 
 ---
 

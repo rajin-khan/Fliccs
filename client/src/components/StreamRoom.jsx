@@ -10,23 +10,28 @@ import { FaComments, FaUsers, FaArrowLeft, FaTimes } from 'react-icons/fa';
 /*
  * Room layout model
  * -----------------
- * The room root owns fullscreen (so chat + participants stay available inside it).
+ * The room root owns fullscreen so chat stays usable inside it.
  *
- * Desktop (lg+):  [ stage flex-1 ][ docked panel 340-380px ]
- * Mobile (<lg):   stage (16:9, capped) stacked above the panel; hiding the panel
- *                 gives a full-bleed theater view.
- * Fullscreen:     stage fills everything; the panel becomes a floating glass
- *                 drawer on the right, toggled from the top bar.
+ * Normal (desktop):  [ stage flex-1 ][ docked panel 340-380px ]  — panel hideable
+ * Normal (mobile):   stage (16:9) stacked above the panel; hide panel = theater
+ * Fullscreen:        Teleparty-style. Horizontal split always —
+ *                    [ video flex-1 | chat slide-over always on ].
+ *                    Video resizes so the full frame stays visible; chat never
+ *                    overlays the picture. Panel cannot be dismissed in FS.
  *
- * z-scale: 10 player controls, 20 player badges, 30 top bar, 40 panel overlay, 50 modal.
+ * z-scale: 10 player controls, 20 player badges, 30 top bar, 50 modal.
  */
+// Fullscreen rail: caps at 360px but never steals more than ~34% so the
+// full video frame always stays visible next to chat (Teleparty split).
+const FS_PANEL_STYLE = { width: 'min(360px, 34vw)' };
+
 function StreamRoom({ socket, sessionId, sessionPassword, participants: participantsProp, initialParticipants, onLeave }) {
     const [participants, setParticipants] = useState(initialParticipants || participantsProp || []);
     const [sessionMode, setSessionMode] = useState('sync');
     const [messages, setMessages] = useState([]);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
 
-    // Panel state
+    // Panel state (outside fullscreen only — FS keeps chat always on)
     const [panelOpen, setPanelOpen] = useState(true);
     const [activeTab, setActiveTab] = useState('chat'); // 'chat' | 'people'
     const [unreadCount, setUnreadCount] = useState(0);
@@ -34,6 +39,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
     // Refs mirroring panel state so socket handlers see current values
     const panelOpenRef = useRef(panelOpen);
     const activeTabRef = useRef(activeTab);
+    const isFullscreenRef = useRef(false);
     panelOpenRef.current = panelOpen;
     activeTabRef.current = activeTab;
 
@@ -49,7 +55,10 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
     const hostId = useMemo(() => participants[0]?.id, [participants]);
     const isHost = useMemo(() => selfId === hostId, [selfId, hostId]);
 
-    // --- Session data wiring (unchanged behavior) ---
+    // In fullscreen the chat rail is always present
+    const showPanel = isFullscreen || panelOpen;
+
+    // --- Session data wiring ---
     useEffect(() => {
         if (!socket) return;
         const handleParticipantsUpdate = ({ participants: updatedParticipants, mode: updatedMode }) => {
@@ -67,7 +76,11 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
         if (!socket) return;
         const handleMessage = (msg) => {
             setMessages((prev) => [...prev, msg]);
-            if (msg.senderId !== socket.id && (!panelOpenRef.current || activeTabRef.current !== 'chat')) {
+            // Unread only when chat isn't the visible tab (or panel is closed outside FS)
+            const chatVisible =
+                (isFullscreenRef.current || panelOpenRef.current) &&
+                activeTabRef.current === 'chat';
+            if (msg.senderId !== socket.id && !chatVisible) {
                 setUnreadCount((n) => Math.min(n + 1, 99));
             }
         };
@@ -89,7 +102,17 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
 
     // --- Fullscreen ---
     useEffect(() => {
-        const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+        const onFsChange = () => {
+            const on = !!document.fullscreenElement;
+            setIsFullscreen(on);
+            isFullscreenRef.current = on;
+            // Entering FS: force chat rail open on the Chat tab
+            if (on) {
+                setPanelOpen(true);
+                setActiveTab('chat');
+                setUnreadCount(0);
+            }
+        };
         document.addEventListener('fullscreenchange', onFsChange);
         return () => document.removeEventListener('fullscreenchange', onFsChange);
     }, []);
@@ -124,8 +147,14 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
         };
     }, [isFullscreen, pokeBar]);
 
-    // --- Panel controls ---
+    // --- Panel controls (outside fullscreen) ---
     const openTab = useCallback((tab) => {
+        // In fullscreen the rail is always on — just switch tabs
+        if (isFullscreen) {
+            setActiveTab(tab);
+            if (tab === 'chat') setUnreadCount(0);
+            return;
+        }
         if (panelOpen && activeTab === tab) {
             setPanelOpen(false);
             return;
@@ -133,14 +162,14 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
         setActiveTab(tab);
         setPanelOpen(true);
         if (tab === 'chat') setUnreadCount(0);
-    }, [panelOpen, activeTab]);
+    }, [panelOpen, activeTab, isFullscreen]);
 
     const switchTab = useCallback((tab) => {
         setActiveTab(tab);
         if (tab === 'chat') setUnreadCount(0);
     }, []);
 
-    // --- Chat send (unchanged behavior) ---
+    // --- Chat send ---
     const sendMessage = (text) => {
         const trimmed = text.trim();
         if (!trimmed || !socket || !sessionId) return;
@@ -171,9 +200,6 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
             </div>
         );
     }
-
-    const showDockedPanel = panelOpen && !isFullscreen;
-    const showOverlayPanel = panelOpen && isFullscreen;
 
     const panelBody = (
         <>
@@ -207,13 +233,16 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                         </span>
                     </button>
                 </div>
-                <button
-                    onClick={() => setPanelOpen(false)}
-                    title="Hide panel"
-                    className="px-4 py-3.5 text-white/30 hover:text-white transition-colors"
-                >
-                    <FaTimes className="text-xs" />
-                </button>
+                {/* Hide only outside fullscreen — Teleparty FS keeps the rail always on */}
+                {!isFullscreen && (
+                    <button
+                        onClick={() => setPanelOpen(false)}
+                        title="Hide panel"
+                        className="px-4 py-3.5 text-white/30 hover:text-white transition-colors"
+                    >
+                        <FaTimes className="text-xs" />
+                    </button>
+                )}
             </div>
 
             {/* Tab content */}
@@ -249,13 +278,21 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                     </div>
                 )}
 
-                <div className={`relative flex h-full w-full mx-auto ${isFullscreen ? 'flex-col' : 'flex-col lg:flex-row gap-0 sm:gap-3 lg:gap-4 max-w-[1800px]'}`}>
+                {/*
+                  Fullscreen = always a horizontal split (Teleparty).
+                  Normal = stacked on mobile, side-by-side on lg+.
+                */}
+                <div
+                    className={`relative flex h-full w-full mx-auto ${isFullscreen
+                        ? 'flex-row'
+                        : 'flex-col lg:flex-row gap-0 sm:gap-3 lg:gap-0 max-w-[1800px]'}`}
+                >
 
                     {/* ===== Stage ===== */}
                     <div
-                        className={`relative bg-black overflow-hidden min-h-0 ${isFullscreen
-                            ? 'flex-1 w-full rounded-none'
-                            : `w-full border border-white/10 rounded-none sm:rounded-2xl lg:flex-1 lg:h-full shadow-[0_0_80px_-30px_rgba(100,53,172,0.4)] ${panelOpen ? 'aspect-video max-h-[46dvh] lg:aspect-auto lg:max-h-none' : 'flex-1'}`}`}
+                        className={`relative bg-black overflow-hidden min-h-0 flex-1 ${isFullscreen
+                            ? 'rounded-none h-full'
+                            : `w-full border border-white/10 rounded-none sm:rounded-2xl lg:h-full shadow-[0_0_80px_-30px_rgba(100,53,172,0.4)] ${showPanel ? 'aspect-video max-h-[46dvh] lg:aspect-auto lg:max-h-none' : ''}`}`}
                     >
                         {/* Top bar */}
                         <div
@@ -286,7 +323,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                                 <button
                                     onClick={() => openTab('people')}
                                     title="People"
-                                    className={`relative flex items-center gap-1.5 h-9 px-3 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${panelOpen && activeTab === 'people'
+                                    className={`relative flex items-center gap-1.5 h-9 px-3 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${showPanel && activeTab === 'people'
                                         ? 'bg-brand-primary/20 border-brand-primary/40 text-white'
                                         : 'bg-black/40 border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
                                 >
@@ -297,7 +334,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                                 <button
                                     onClick={() => openTab('chat')}
                                     title="Chat"
-                                    className={`relative flex items-center justify-center h-9 w-9 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${panelOpen && activeTab === 'chat'
+                                    className={`relative flex items-center justify-center h-9 w-9 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${showPanel && activeTab === 'chat'
                                         ? 'bg-brand-primary/20 border-brand-primary/40 text-white'
                                         : 'bg-black/40 border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
                                 >
@@ -324,20 +361,29 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                         />
                     </div>
 
-                    {/* ===== Docked panel (desktop column / mobile lower section) ===== */}
-                    {showDockedPanel && (
-                        <aside className="flex flex-col flex-1 min-h-0 w-full bg-[#05050d] border-t border-white/10 sm:border sm:rounded-2xl lg:flex-none lg:w-[340px] xl:w-[380px] lg:h-full overflow-hidden">
+                    {/* ===== Side panel (Teleparty rail) =====
+                        Fullscreen: always on, fixed width, slides in from the right,
+                        video shrinks so the full frame stays visible.
+                        Normal: same rail on desktop; stacks below stage on mobile;
+                        can be dismissed. */}
+                    <aside
+                        className={`flex flex-col min-h-0 bg-[#05050d] overflow-hidden transition-[width,margin] duration-300 ease-out ${isFullscreen
+                            ? 'h-full border-l border-white/10 shrink-0'
+                            : showPanel
+                                ? 'flex-1 w-full border-t border-white/10 sm:border sm:rounded-2xl lg:flex-none lg:w-[360px] lg:h-full lg:ml-4 lg:border-t-0'
+                                : 'hidden lg:block lg:w-0 lg:ml-0 lg:border-0'}`}
+                        style={isFullscreen ? FS_PANEL_STYLE : undefined}
+                        aria-hidden={!showPanel}
+                    >
+                        {/* Fixed-width inner so content doesn't reflow while the rail slides */}
+                        <div
+                            className={`h-full w-full flex flex-col min-h-0 ${isFullscreen ? '' : 'lg:w-[360px]'}`}
+                            style={isFullscreen ? FS_PANEL_STYLE : undefined}
+                        >
                             {panelBody}
-                        </aside>
-                    )}
-                </div>
-
-                {/* ===== Fullscreen overlay panel ===== */}
-                {showOverlayPanel && (
-                    <aside className="absolute z-40 right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 w-[min(92vw,380px)] flex flex-col rounded-2xl border border-white/10 bg-[#05050d]/90 backdrop-blur-xl shadow-2xl overflow-hidden animate-fade-in">
-                        {panelBody}
+                        </div>
                     </aside>
-                )}
+                </div>
             </div>
 
             <ConfirmLeaveModal

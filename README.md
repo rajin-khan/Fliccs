@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./documentation/banneroptimized.jpeg" alt="Fliccs Banner" />
+  <img src="./documentation/fliccs-cover.png" alt="Fliccs Banner" />
 </p>
 
 <h1 align="center">Fliccs</h1>

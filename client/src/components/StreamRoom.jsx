@@ -164,6 +164,11 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
 
     const handleConfirmLeave = () => {
         setShowLeaveModal(false);
+        // Drop fullscreen before tearing down the room so the browser
+        // doesn't leave a stuck FS layer on the landing page.
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+        }
         if (socket) {
             socket.emit('session:leave');
         }
@@ -374,6 +379,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                 isOpen={showLeaveModal}
                 onCancel={() => setShowLeaveModal(false)}
                 onConfirm={handleConfirmLeave}
+                container={roomRef.current}
             />
         </>
     );

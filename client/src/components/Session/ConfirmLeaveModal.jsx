@@ -2,11 +2,21 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 
-function ConfirmLeaveModal({ isOpen, onConfirm, onCancel }) {
+/**
+ * Leave confirmation. Portals into `container` (the room root) when provided,
+ * otherwise into the current fullscreen element, otherwise document.body —
+ * so the dialog stays visible while the room is fullscreen.
+ */
+function ConfirmLeaveModal({ isOpen, onConfirm, onCancel, container }) {
     if (!isOpen) return null;
 
+    const target =
+        container ||
+        (typeof document !== 'undefined' ? document.fullscreenElement : null) ||
+        document.body;
+
     return createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4 animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 px-4 animate-fade-in">
             <div
                 className="animate-fade-in-up bg-[#0a0a12] border border-white/10 rounded-2xl p-8 w-full max-w-sm text-center text-white font-barlow relative overflow-hidden shadow-2xl"
             >
@@ -35,7 +45,7 @@ function ConfirmLeaveModal({ isOpen, onConfirm, onCancel }) {
                 </div>
             </div>
         </div>,
-        document.body
+        target
     );
 }
 

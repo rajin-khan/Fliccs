@@ -8,8 +8,6 @@ Hardcoded creds live in `client/src/hooks/useWebRTC.js` → `turnCredentials` (`
 bash /Users/rajin/Developer/scripts/fliccs.sh
 ```
 
-(`tessro.sh` still works as a thin wrapper to the same script.)
-
 This fetches Twilio tokens, patches `useWebRTC.js`, commits, and pushes (`TURN Server Maintenance`).
 
 ## Manual curl (if needed)

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
-import logo from '../../assets/logo.png';
+import BrandLogo from '../BrandLogo';
 
 export default function PageLayout({ children, title }) {
     const navigate = useNavigate();
@@ -18,7 +18,7 @@ export default function PageLayout({ children, title }) {
             {/* Header */}
             <header className="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-50">
                 <div onClick={() => navigate('/')} className="flex items-center gap-4 cursor-pointer group">
-                    <img src={logo} alt="Tessro" className="h-8 md:h-10 opacity-90 group-hover:opacity-100 transition-opacity" />
+                    <BrandLogo size="md" className="group-hover:opacity-100 transition-opacity opacity-90" />
                     <div className="w-px h-6 bg-white/10 hidden md:block"></div>
                     <span className="text-white/50 text-xs tracking-[0.2em] font-medium uppercase group-hover:text-white transition-colors duration-300">
                         <span className="hidden md:inline">Back to Home</span>
@@ -49,7 +49,7 @@ export default function PageLayout({ children, title }) {
             {/* Footer */}
             <footer className="w-full text-center pb-8 z-10 opacity-30 hover:opacity-100 transition-opacity duration-300">
                 <p className="text-[10px] text-white/50 uppercase tracking-[0.2em] font-light">
-                    &copy; 2026 Tessro. All rights reserved.
+                    &copy; 2026 Fliccs. All rights reserved.
                 </p>
             </footer>
         </div>

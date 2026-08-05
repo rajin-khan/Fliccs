@@ -59,7 +59,7 @@ const rootDir = path.join(__dirname, '../../client/dist');
 
 // Move health check route before the catch-all route to make it accessible
 app.get('/health', (req, res) => {
-  res.send('Tessro Server is running!');
+  res.send('Fliccs Server is running!');
 });
 
 app.use(express.static(rootDir));
@@ -105,5 +105,5 @@ io.on('connection', (socket) => {
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`Tessro server listening on port ${PORT}`);
+  console.log(`Fliccs server listening on port ${PORT}`);
 });

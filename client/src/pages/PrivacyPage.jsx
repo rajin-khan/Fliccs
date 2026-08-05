@@ -8,7 +8,7 @@ export default function PrivacyPage() {
                 <div>
                     <p className="text-sm text-brand-primary font-bold uppercase tracking-widest mb-6">Last updated: January 2026</p>
                     <p className="text-xl text-white/80 font-normal">
-                        Your privacy is non-negotiable. Tessro is built to be ephemeral, meaning we don't store what you don't ask us to.
+                        Your privacy is non-negotiable. Fliccs is built to be ephemeral, meaning we don't store what you don't ask us to.
                     </p>
                 </div>
 
@@ -35,7 +35,7 @@ export default function PrivacyPage() {
                         <span className="text-brand-primary/50">03.</span> Session Ephermerality
                     </h3>
                     <p>
-                        Tessro sessions are designed to be ephemeral. We do not persistently store chat logs, file metadata, or stream contents after a session has ended. Once a room is destroyed, the data is gone.
+                        Fliccs sessions are designed to be ephemeral. We do not persistently store chat logs, file metadata, or stream contents after a session has ended. Once a room is destroyed, the data is gone.
                     </p>
                 </section>
 

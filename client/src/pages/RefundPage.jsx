@@ -8,7 +8,7 @@ export default function RefundPage() {
                 <div>
                     <p className="text-sm text-brand-primary font-bold uppercase tracking-widest mb-6">Last updated: January 2026</p>
                     <p className="text-xl text-white/80 font-normal">
-                        We want you to be happy with Tessro Premium. If it's not working out, we've got you covered.
+                        We want you to be happy with Fliccs Premium. If it's not working out, we've got you covered.
                     </p>
                 </div>
 
@@ -17,7 +17,7 @@ export default function RefundPage() {
                         <span className="text-brand-primary/50">01.</span> Satisfaction Guarantee
                     </h3>
                     <p>
-                        If you are not satisfied with your Tessro Premium subscription within the first 14 days of your purchase, you may request a full refund. No questions asked.
+                        If you are not satisfied with your Fliccs Premium subscription within the first 14 days of your purchase, you may request a full refund. No questions asked.
                     </p>
                 </section>
 

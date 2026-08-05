@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="./documentation/banneroptimized.jpeg" alt="Tessro Banner" />
+  <img src="./documentation/banneroptimized.jpeg" alt="Fliccs Banner" />
 </p>
 
-<h1 align="center">Tessro</h1>
+<h1 align="center">Fliccs</h1>
 <p align="center"><strong>Real-time. Real fast. Fully private.</strong></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-v2.2.0 Running-green" alt="Status Badge">
-  <img src="https://img.shields.io/badge/TURN Server-External-purple" alt="Turn Server External Badge">
+  <img src="https://img.shields.io/badge/Status-v2.2.0 Local-green" alt="Status Badge">
+    <img src="https://img.shields.io/badge/TURN Server-External-purple" alt="Turn Server External Badge">
   <img src="https://img.shields.io/badge/License-GPL 3.0-lightgrey" alt="GPL 3.0 License Badge">
 </p>
 
@@ -15,17 +15,17 @@
 
 ---
 
-### **💻 V2.2 Live Now! →** [tessro.com](https://tessro.com/)
+### **💻 V2.2 — local / Railway deploy coming (Phase C)**
 
 ---
 
-## 🎥 What is Tessro?
+## 🎥 What is Fliccs?
 
-**Tessro** is a blazing-fast real-time synchronized video playback platform that just got even better. Whether you're across the world or across the room, Tessro brings friends and teams together with seamless, **fully private video sessions**.
+**Fliccs** is a blazing-fast real-time synchronized video playback platform that just got even better. Whether you're across the world or across the room, Fliccs brings friends and teams together with seamless, **fully private video sessions**.
 
 🚀 You can now choose between two modes:
 
-- 🌀 **Sync Mode** — Everyone picks the same local video file, and Tessro syncs playback across devices.
+- 🌀 **Sync Mode** — Everyone picks the same local video file, and Fliccs syncs playback across devices.
 - 📡 **Stream Mode** — The host selects a file, and others watch the host’s stream in real-time, thanks to **WebRTC**.
 
 **All with:**
@@ -41,7 +41,7 @@
 
 > *Bring back the joy of watching together — personal, private, and perfectly in sync.*
 
-Tessro is ideal for:
+Fliccs is ideal for:
 - 🎞️ Movie nights
 - 🎓 Online training
 - 📽️ Remote film reviews
@@ -72,13 +72,13 @@ Tessro is ideal for:
 1. 🔧 **Create Session** — As a host, generate a session and choose a file.
 2. 🔗 **Share Link** — Copy the shareable link and send it to friends (or use session ID/password).
 3. 🌀 **Pick Your Mode** — Sync files or just let the host stream.
-4. ⏯️ **Watch Together** — Tessro handles syncing, controls, and chat!
+4. ⏯️ **Watch Together** — Fliccs handles syncing, controls, and chat!
 
 ---
 
 ## 🔒 Privacy First
 
-Tessro:
+Fliccs:
 - Stores **no user data**
 - Uses **no uploads**
 - Supports **end-to-end WebRTC streaming**
@@ -120,6 +120,6 @@ Just me, actually.
 
 ## 🚀 Want to Contribute?
 
-Tessro is open-source, and minimalist. PRs are welcome!
+Fliccs is open-source, and minimalist. PRs are welcome!
 
 </div>

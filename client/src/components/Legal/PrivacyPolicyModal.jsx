@@ -57,13 +57,13 @@ function PrivacyPolicyModal({ show, onClose }) {
 
                 <div className="space-y-5 text-sm text-gray-400 font-light max-h-[65vh] overflow-y-auto pr-2 leading-relaxed custom-scrollbar">
                     <p>
-                        Tessro does not collect, store, or share any personal data. All activity happens <span className="text-white font-normal">peer-to-peer</span> and is session-based. No video files are uploaded to any server.
+                        Fliccs does not collect, store, or share any personal data. All activity happens <span className="text-white font-normal">peer-to-peer</span> and is session-based. No video files are uploaded to any server.
                     </p>
                     <p>
                         Your nickname and messages are temporarily stored in your browser memory for the duration of the session and are cleared when you leave.
                     </p>
                     <p>
-                        By using Tessro, you acknowledge that the platform is designed for private, ephemeral video sessions with friends, and you are fully responsible for the content you stream.
+                        By using Fliccs, you acknowledge that the platform is designed for private, ephemeral video sessions with friends, and you are fully responsible for the content you stream.
                     </p>
                     <p className="text-xs text-gray-500 pt-4 border-t border-white/5">
                         We use no cookies, trackers, or analytics. You are fully in control of your privacy.

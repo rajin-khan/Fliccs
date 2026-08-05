@@ -25,7 +25,7 @@ function Participants({ participants = [], hostId, selfId, sessionId, sessionPas
         const shareableLink = `${window.location.origin}${window.location.pathname}?join=${encodeURIComponent(sessionId)}&pass=${encodeURIComponent(sessionPassword)}`;
 
         const inviteMessage = `
-🥳 Join the watch party on Tessro!
+🥳 Join the watch party on Fliccs!
 ✨ Auto-join link: ${shareableLink}
 🔭 Session ID: ${sessionId}
 🧧 Password: ${sessionPassword}

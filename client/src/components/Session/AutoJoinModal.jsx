@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import logo from '../../assets/logo.png';
+import BrandLogo from '../BrandLogo';
 
 function AutoJoinModal({ sessionId, password, socket, isConnected, onJoin, onCancel }) {
     const [nickname, setNickname] = useState('');
@@ -57,11 +57,7 @@ function AutoJoinModal({ sessionId, password, socket, isConnected, onJoin, onCan
 
                 {/* Logo and header */}
                 <div className="flex flex-col items-center mb-8 relative z-10">
-                    <img
-                        src={logo}
-                        alt="Tessro"
-                        className="h-10 w-auto mb-4 opacity-90"
-                    />
+                    <BrandLogo size="lg" className="mb-4" />
                     <h2 className="text-xl text-white font-medium tracking-tight">Join Session</h2>
                     <p className="text-gray-400 text-center text-sm font-light mt-1">
                         You've been invited to watch together.

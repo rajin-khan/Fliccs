@@ -5,7 +5,7 @@ import VideoPlayer from './VideoPlayer';
 import CreateSession from './Session/Create';
 import JoinSession from './Session/Join';
 import ServerStatusTimer from './Session/ServerStatusTimer';
-import logo from '../assets/logo.png';
+import BrandLogo from './BrandLogo';
 import visionImg from '../assets/promo/vision.png';
 import syncImg from '../assets/promo/sync.png';
 import streamImg from '../assets/promo/stream.png';
@@ -76,7 +76,7 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
             {/* Header */}
             <header className="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-50">
                 <div className="flex items-center gap-3">
-                    <img src={logo} alt="Tessro" className="h-8 md:h-10 opacity-90" />
+                    <BrandLogo size="md" />
                     <div className="flex flex-col">
                         <span className="text-white/50 text-[10px] tracking-[0.2em] font-light leading-none">V3.0</span>
                     </div>
@@ -176,12 +176,6 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
                             </button>
                         </div>
 
-                        {/* Developer / Portfolio Link - Mobile */}
-                        <div className="lg:hidden mt-8 text-center animate-fade-in delay-200">
-                            <p className="text-xs text-gray-500 mb-2">
-                                Crafted by <a href="https://rajinkhan.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-brand-primary transition-colors border-b border-transparent hover:border-brand-primary pb-0.5">Rajin Khan</a>
-                            </p>
-                        </div>
                     </div>
                 </div>
             </main>
@@ -247,7 +241,7 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
                                         <div className="flex items-center gap-3">
                                             <div className="h-px w-6 bg-brand-primary/40" />
                                             <a
-                                                href="https://www.rajinkhan.com/projects/tessro"
+                                                href="https://www.rajinkhan.com/projects/fliccs"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-[10px] uppercase tracking-widest text-brand-primary hover:text-white transition-colors font-bold group-hover:translate-x-1 duration-300"

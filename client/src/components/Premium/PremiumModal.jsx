@@ -1,7 +1,7 @@
 // client/src/components/Premium/PremiumModal.jsx
 import React, { useEffect, useState } from 'react';
 import { FaCheck, FaTimes, FaGem, FaInfinity, FaServer, FaMicrophone } from 'react-icons/fa';
-import logo from '../../assets/logo.png';
+import BrandLogo from '../BrandLogo';
 import premiumImg from '../../assets/promo/premium.png';
 
 export default function PremiumModal({ isOpen, onClose }) {
@@ -65,13 +65,13 @@ export default function PremiumModal({ isOpen, onClose }) {
                     {/* Left Side: Visuals & Hook */}
                     <div className="md:w-5/12 p-6 md:p-12 flex flex-col justify-between relative overflow-hidden border-b md:border-b-0 md:border-r border-white/5 bg-white/[0.02]">
                         <div className="relative z-10">
-                            <img src={logo} alt="Tessro Premium" className="h-8 md:h-10 w-auto opacity-90 mb-8" />
+                            <BrandLogo size="md" alt="Fliccs Premium" className="mb-8" />
                             <h2 className="text-3xl md:text-5xl text-white font-medium tracking-tight mb-4 leading-[0.95] uppercase">
                                 Upgrade your <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow via-amber-200 to-brand-yellow font-bold">Watch Parties.</span>
                             </h2>
                             <p className="text-gray-400 font-light text-sm md:text-base max-w-xs leading-relaxed uppercase tracking-wide">
-                                Tessro is evolving. Secure your spot for the ultimate streaming experience.
+                                Fliccs is evolving. Secure your spot for the ultimate streaming experience.
                             </p>
                         </div>
 

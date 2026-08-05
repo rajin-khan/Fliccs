@@ -4,7 +4,7 @@ import useVideoSync from './useVideoSync';
 import useWebRTC from '../../hooks/useWebRTC';
 import { calculateFileHash } from '../../utils/fileHash.js';
 import PlayerControls from './PlayerControls';
-import logo from '../../assets/logo.png';
+import BrandLogo from '../BrandLogo';
 
 function VideoPlayer({
     socket,
@@ -432,7 +432,7 @@ function VideoPlayer({
                             {/* Logo Overlay */}
                             <div className={`absolute top-6 right-6 z-20 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
                                 <div className="bg-black/60 backdrop-blur-md border border-brand-primary/30 rounded-full px-3 py-1.5 shadow-lg flex items-center justify-center">
-                                    <img src={logo} alt="Tessro" className="h-5 w-auto opacity-90" />
+                                    <BrandLogo size="sm" />
                                 </div>
                             </div>
 

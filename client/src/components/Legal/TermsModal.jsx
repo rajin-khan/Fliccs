@@ -55,20 +55,20 @@ function TermsModal({ isOpen, onClose }) {
 
                 <div className="text-sm text-gray-400 font-light space-y-4 max-h-[65vh] overflow-y-auto pr-2 leading-relaxed custom-scrollbar">
                     <p>
-                        By using Tessro, you acknowledge and agree to the following terms:
+                        By using Fliccs, you acknowledge and agree to the following terms:
                     </p>
                     <ul className="list-disc pl-5 space-y-3 marker:text-brand-primary">
                         <li>
-                            Tessro is intended for personal use and collaborative media syncing only.
+                            Fliccs is intended for personal use and collaborative media syncing only.
                         </li>
                         <li>
                             Users are solely responsible for the content they stream or share using this application.
                         </li>
                         <li>
-                            Tessro does not host or distribute any copyrighted media.
+                            Fliccs does not host or distribute any copyrighted media.
                         </li>
                         <li>
-                            Tessro does not store any video content.
+                            Fliccs does not store any video content.
                         </li>
                         <li>
                             Any misuse of this application for illegal streaming or distribution is <span className="text-red-400 font-normal">STRICTLY PROHIBITED</span>.
@@ -83,11 +83,11 @@ function TermsModal({ isOpen, onClose }) {
                             We are NOT liable for any DMCA violations, user behavior, or third-party copyright infringement.
                         </li>
                         <li>
-                            Tessro is provided as-is, without warranties. The developer assumes no responsibility for any misuse of this platform.
+                            Fliccs is provided as-is, without warranties. The developer assumes no responsibility for any misuse of this platform.
                         </li>
                     </ul>
                     <p className="text-xs text-gray-500 pt-4 border-t border-white/5">
-                        By continuing to use Tessro, you automatically accept these terms.
+                        By continuing to use Fliccs, you automatically accept these terms.
                     </p>
                 </div>
 

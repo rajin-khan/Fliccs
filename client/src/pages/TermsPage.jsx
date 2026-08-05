@@ -8,7 +8,7 @@ export default function TermsPage() {
                 <div>
                     <p className="text-sm text-brand-primary font-bold uppercase tracking-widest mb-6">Last updated: January 2026</p>
                     <p className="text-xl text-white/80 font-normal">
-                        Welcome to Tessro. By accessing or using our website and services, you agree to be bound by these Terms of Service and all applicable laws and regulations.
+                        Welcome to Fliccs. By accessing or using our website and services, you agree to be bound by these Terms of Service and all applicable laws and regulations.
                     </p>
                 </div>
 
@@ -17,7 +17,7 @@ export default function TermsPage() {
                         <span className="text-brand-primary/50">01.</span> Use License
                     </h3>
                     <p>
-                        Permission is granted to temporarily view the materials (information or software) on Tessro's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.
+                        Permission is granted to temporarily view the materials (information or software) on Fliccs's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.
                     </p>
                 </section>
 
@@ -35,7 +35,7 @@ export default function TermsPage() {
                         <span className="text-brand-primary/50">03.</span> Disclaimer
                     </h3>
                     <p>
-                        The materials on Tessro's website are provided on an 'as is' basis. Tessro makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property.
+                        The materials on Fliccs's website are provided on an 'as is' basis. Fliccs makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property.
                     </p>
                 </section>
 
@@ -44,7 +44,7 @@ export default function TermsPage() {
                         <span className="text-brand-primary/50">04.</span> Limitations
                     </h3>
                     <p>
-                        In no event shall Tessro or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Tessro's website.
+                        In no event shall Fliccs or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Fliccs's website.
                     </p>
                 </section>
 
@@ -53,7 +53,7 @@ export default function TermsPage() {
                         <span className="text-brand-primary/50">05.</span> Proprietor
                     </h3>
                     <p>
-                        Tessro is owned and operated by <a href="https://rajinkhan.com/about" target="_blank" rel="noopener noreferrer" className="text-white hover:text-brand-primary transition-colors border-b border-white/30 hover:border-brand-primary">Adib Ar Rahman Khan (also known as Rajin Khan)</a>.
+                        Fliccs is owned and operated by <a href="https://rajinkhan.com/about" target="_blank" rel="noopener noreferrer" className="text-white hover:text-brand-primary transition-colors border-b border-white/30 hover:border-brand-primary">Adib Ar Rahman Khan (also known as Rajin Khan)</a>.
                     </p>
                 </section>
             </div>

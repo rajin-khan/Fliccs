@@ -323,9 +323,14 @@ function VideoPlayer({
                                     <h4 className="text-white font-medium truncate" title={fileName}>{fileName}</h4>
                                     <div className="flex items-center gap-2 mt-1">
                                         {sessionMode === 'sync' && getStatusBadge()}
-                                        <p className="text-[10px] text-gray-500 font-mono">
-                                            {fileHash ? `#${fileHash.slice(0, 8)}` : 'Hash Pending...'}
-                                        </p>
+                                        {sessionMode === 'sync' && (
+                                            <p className="text-[10px] text-gray-500 font-mono">
+                                                {fileHash ? `#${fileHash.slice(0, 8)}` : 'Hash Pending...'}
+                                            </p>
+                                        )}
+                                        {sessionMode === 'stream' && (
+                                            <p className="text-[10px] text-brand-primary/70 uppercase tracking-wider">Broadcasting</p>
+                                        )}
                                     </div>
                                 </div>
                                 <label className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-white cursor-pointer transition-colors shrink-0">
@@ -400,7 +405,11 @@ function VideoPlayer({
                                         <div className="flex flex-col items-start min-w-0">
                                             <span className="text-[10px] font-bold text-white max-w-[120px] truncate">{fileName}</span>
                                             <div className="flex items-center gap-1.5">
-                                                <span className="text-[9px] text-gray-400 font-mono">{fileHash ? `#${fileHash.slice(0, 8)}` : '...'}</span>
+                                                <span className="text-[9px] text-gray-400 font-mono">
+                                                    {sessionMode === 'sync'
+                                                        ? (fileHash ? `#${fileHash.slice(0, 8)}` : '...')
+                                                        : 'LIVE'}
+                                                </span>
                                                 {sessionMode === 'sync' && fileStatus === 'mismatched' && (
                                                     <span className="text-[8px] bg-red-500/20 text-red-400 px-1 rounded border border-red-500/20">MISMATCH</span>
                                                 )}

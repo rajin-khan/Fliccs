@@ -344,6 +344,21 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
     });
   });
 
+  /**
+   * Guest asks host to (re)send a WebRTC offer — covers missed offers from mode-sync races.
+   */
+  socket.on('webrtc:request-offer', ({ targetUserId }) => {
+    const sessionId = socketToSessionMap.get(socket.id);
+    if (!sessionId || !targetUserId) return;
+    const session = sessions.get(sessionId);
+    if (!session || !session.users.some(u => u.id === targetUserId)) return;
+
+    console.log(`[webrtc] Relaying offer request from ${socket.id} to host ${targetUserId} in session ${sessionId}`);
+    socket.to(targetUserId).emit('webrtc:request-offer', {
+      fromUserId: socket.id,
+    });
+  });
+
   socket.on('session:request_participants', () => {
     const sessionId = socketToSessionMap.get(socket.id);
     if (!sessionId) return;

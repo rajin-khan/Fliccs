@@ -419,7 +419,14 @@ function useWebRTC({
 
     // --- Guest: Handle incoming offer from Host ---
     const handleOffer = async ({ fromUserId, offer }) => {
-      if (isHost || sessionMode !== 'stream') return;
+      // Do NOT gate on sessionMode === 'stream'. Guests default to 'sync' until
+      // session:participants arrives; the host offer often wins that race and was
+      // being dropped, leaving ICE candidates queued with no peer connection.
+      if (isHost) return;
+
+      if (sessionMode !== 'stream') {
+        console.log(`[WebRTC Guest] Offer from ${fromUserId} arrived while mode='${sessionMode}' — accepting anyway (mode sync race).`);
+      }
 
       console.log(`[WebRTC Guest] Received offer from host ${fromUserId}`);
       clearError();
@@ -601,6 +608,61 @@ function useWebRTC({
 
   // Depend on participants, streaming state, selfId, socket, and connection functions
   }, [participants, isHost, isStreamingActive, selfId, socket, createPeerConnection, closePeerConnection]);
+
+  // --- Guest: if we enter stream mode with no remote stream, ask host to re-offer ---
+  useEffect(() => {
+    if (isHost || sessionMode !== 'stream' || !socket?.connected || remoteStream) return;
+
+    const hostId = participants[0]?.id;
+    if (!hostId || hostId === selfId) return;
+
+    const timer = setTimeout(() => {
+      if (remoteStream) return;
+      console.log(`[WebRTC Guest] Still waiting for stream — requesting offer from host ${hostId}`);
+      socket.emit('webrtc:request-offer', { targetUserId: hostId });
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [isHost, sessionMode, socket, remoteStream, participants, selfId]);
+
+  // --- Host: fulfill guest offer requests ---
+  useEffect(() => {
+    if (!socket || !isHost) return;
+
+    const handleOfferRequest = async ({ fromUserId }) => {
+      if (!isStreamingActive || !localStreamRef.current) {
+        console.warn(`[WebRTC Host] Offer requested by ${fromUserId} but streaming is not active yet.`);
+        return;
+      }
+      console.log(`[WebRTC Host] Guest ${fromUserId} requested an offer — (re)negotiating.`);
+
+      // Tear down any half-open PC so we send a fresh offer
+      if (peerConnections.current.has(fromUserId)) {
+        closePeerConnection(fromUserId);
+      }
+
+      const pc = createPeerConnection(fromUserId);
+      if (!pc) return;
+
+      try {
+        localStreamRef.current.getTracks().forEach((track) => {
+          pc.addTrack(track, localStreamRef.current);
+        });
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.emit('webrtc:offer', {
+          targetUserId: fromUserId,
+          offer: { sdp: offer.sdp, type: offer.type },
+        });
+      } catch (error) {
+        console.error(`[WebRTC Host] Failed to fulfill offer request from ${fromUserId}:`, error);
+        closePeerConnection(fromUserId);
+      }
+    };
+
+    socket.on('webrtc:request-offer', handleOfferRequest);
+    return () => socket.off('webrtc:request-offer', handleOfferRequest);
+  }, [socket, isHost, isStreamingActive, createPeerConnection, closePeerConnection]);
 
 
   // --- Cleanup Effect ---

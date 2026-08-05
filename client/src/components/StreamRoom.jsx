@@ -4,25 +4,24 @@ import Chat from './Chat';
 import Participants from './Session/Participants';
 import SessionInfo from './Session/Info';
 import ConfirmLeaveModal from './Session/ConfirmLeaveModal';
+import InviteButton from './Session/InviteButton';
+import PeopleStrip from './Session/PeopleStrip';
 import BrandLogo from './BrandLogo';
 import { FaComments, FaUsers, FaArrowLeft, FaTimes } from 'react-icons/fa';
 
 /*
- * Room layout model
- * -----------------
- * The room root owns fullscreen so chat stays usable inside it.
+ * Room layout
+ * -----------
+ * Room root owns fullscreen so chat stays usable inside it.
  *
- * Normal (desktop):  [ stage flex-1 ][ docked panel 340-380px ]  — panel hideable
- * Normal (mobile):   stage (16:9) stacked above the panel; hide panel = theater
- * Fullscreen:        Teleparty-style. Horizontal split always —
- *                    [ video flex-1 | chat slide-over always on ].
- *                    Video resizes so the full frame stays visible; chat never
- *                    overlays the picture. Panel cannot be dismissed in FS.
+ * Desktop:  [ stage flex-1 ][ chat rail 360px ] — rail hideable (incl. fullscreen)
+ * Mobile:   stage (16:9) stacked above the rail
+ * Fullscreen Teleparty: when chat is open, video resizes beside the rail
+ *                       (full frame stays visible). Chat toggle slides it away.
  *
- * z-scale: 10 player controls, 20 player badges, 30 top bar, 50 modal.
+ * Desktop top bar also shows a compact PeopleStrip + prominent Invite CTA.
+ * z-scale: 10 player controls, 20 badges, 30 top bar, 50 modal.
  */
-// Fullscreen rail: caps at 360px but never steals more than ~34% so the
-// full video frame always stays visible next to chat (Teleparty split).
 const FS_PANEL_STYLE = { width: 'min(360px, 34vw)' };
 
 function StreamRoom({ socket, sessionId, sessionPassword, participants: participantsProp, initialParticipants, onLeave }) {
@@ -31,23 +30,18 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
     const [messages, setMessages] = useState([]);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
 
-    // Panel state (outside fullscreen only — FS keeps chat always on)
     const [panelOpen, setPanelOpen] = useState(true);
     const [activeTab, setActiveTab] = useState('chat'); // 'chat' | 'people'
     const [unreadCount, setUnreadCount] = useState(0);
 
-    // Refs mirroring panel state so socket handlers see current values
     const panelOpenRef = useRef(panelOpen);
     const activeTabRef = useRef(activeTab);
-    const isFullscreenRef = useRef(false);
     panelOpenRef.current = panelOpen;
     activeTabRef.current = activeTab;
 
-    // Room-level fullscreen
     const roomRef = useRef(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
 
-    // Top bar auto-hide (fullscreen only)
     const [barVisible, setBarVisible] = useState(true);
     const barTimerRef = useRef(null);
 
@@ -55,10 +49,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
     const hostId = useMemo(() => participants[0]?.id, [participants]);
     const isHost = useMemo(() => selfId === hostId, [selfId, hostId]);
 
-    // In fullscreen the chat rail is always present
-    const showPanel = isFullscreen || panelOpen;
-
-    // --- Session data wiring ---
+    // --- Session data ---
     useEffect(() => {
         if (!socket) return;
         const handleParticipantsUpdate = ({ participants: updatedParticipants, mode: updatedMode }) => {
@@ -76,10 +67,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
         if (!socket) return;
         const handleMessage = (msg) => {
             setMessages((prev) => [...prev, msg]);
-            // Unread only when chat isn't the visible tab (or panel is closed outside FS)
-            const chatVisible =
-                (isFullscreenRef.current || panelOpenRef.current) &&
-                activeTabRef.current === 'chat';
+            const chatVisible = panelOpenRef.current && activeTabRef.current === 'chat';
             if (msg.senderId !== socket.id && !chatVisible) {
                 setUnreadCount((n) => Math.min(n + 1, 99));
             }
@@ -105,8 +93,8 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
         const onFsChange = () => {
             const on = !!document.fullscreenElement;
             setIsFullscreen(on);
-            isFullscreenRef.current = on;
-            // Entering FS: force chat rail open on the Chat tab
+            // Entering FS opens chat so the Teleparty split is the default, but
+            // the toggle can still hide it afterward.
             if (on) {
                 setPanelOpen(true);
                 setActiveTab('chat');
@@ -128,7 +116,6 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
         }
     }, []);
 
-    // Auto-hide the top bar in fullscreen after inactivity
     const pokeBar = useCallback(() => {
         setBarVisible(true);
         if (barTimerRef.current) clearTimeout(barTimerRef.current);
@@ -147,14 +134,8 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
         };
     }, [isFullscreen, pokeBar]);
 
-    // --- Panel controls (outside fullscreen) ---
+    // --- Panel controls (same in FS and windowed — toggle always works) ---
     const openTab = useCallback((tab) => {
-        // In fullscreen the rail is always on — just switch tabs
-        if (isFullscreen) {
-            setActiveTab(tab);
-            if (tab === 'chat') setUnreadCount(0);
-            return;
-        }
         if (panelOpen && activeTab === tab) {
             setPanelOpen(false);
             return;
@@ -162,14 +143,13 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
         setActiveTab(tab);
         setPanelOpen(true);
         if (tab === 'chat') setUnreadCount(0);
-    }, [panelOpen, activeTab, isFullscreen]);
+    }, [panelOpen, activeTab]);
 
     const switchTab = useCallback((tab) => {
         setActiveTab(tab);
         if (tab === 'chat') setUnreadCount(0);
     }, []);
 
-    // --- Chat send ---
     const sendMessage = (text) => {
         const trimmed = text.trim();
         if (!trimmed || !socket || !sessionId) return;
@@ -203,7 +183,6 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
 
     const panelBody = (
         <>
-            {/* Tab header */}
             <div className="shrink-0 flex items-center border-b border-white/5 bg-white/[0.02]">
                 <div className="flex-1 flex">
                     <button
@@ -233,19 +212,15 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                         </span>
                     </button>
                 </div>
-                {/* Hide only outside fullscreen — Teleparty FS keeps the rail always on */}
-                {!isFullscreen && (
-                    <button
-                        onClick={() => setPanelOpen(false)}
-                        title="Hide panel"
-                        className="px-4 py-3.5 text-white/30 hover:text-white transition-colors"
-                    >
-                        <FaTimes className="text-xs" />
-                    </button>
-                )}
+                <button
+                    onClick={() => setPanelOpen(false)}
+                    title="Hide panel"
+                    className="px-4 py-3.5 text-white/30 hover:text-white transition-colors"
+                >
+                    <FaTimes className="text-xs" />
+                </button>
             </div>
 
-            {/* Tab content */}
             <div className="flex-1 min-h-0 flex flex-col">
                 {activeTab === 'people' ? (
                     <Participants
@@ -262,6 +237,9 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
         </>
     );
 
+    // Rail visibility drives both layout and FS Teleparty split
+    const railOpen = panelOpen;
+
     return (
         <>
             <div
@@ -270,7 +248,6 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                 onTouchStart={isFullscreen ? pokeBar : undefined}
                 className={`relative w-full h-[100dvh] bg-brand-bg font-barlow text-white overflow-hidden ${isFullscreen ? 'p-0' : 'p-0 sm:p-3 lg:p-5'}`}
             >
-                {/* Ambient background */}
                 {!isFullscreen && (
                     <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
                         <div className="absolute top-[-15%] left-[-10%] w-[45%] h-[45%] bg-brand-primary/10 blur-[120px] rounded-full" />
@@ -278,10 +255,6 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                     </div>
                 )}
 
-                {/*
-                  Fullscreen = always a horizontal split (Teleparty).
-                  Normal = stacked on mobile, side-by-side on lg+.
-                */}
                 <div
                     className={`relative flex h-full w-full mx-auto ${isFullscreen
                         ? 'flex-row'
@@ -292,7 +265,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                     <div
                         className={`relative bg-black overflow-hidden min-h-0 flex-1 ${isFullscreen
                             ? 'rounded-none h-full'
-                            : `w-full border border-white/10 rounded-none sm:rounded-2xl lg:h-full shadow-[0_0_80px_-30px_rgba(100,53,172,0.4)] ${showPanel ? 'aspect-video max-h-[46dvh] lg:aspect-auto lg:max-h-none' : ''}`}`}
+                            : `w-full border border-white/10 rounded-none sm:rounded-2xl lg:h-full shadow-[0_0_80px_-30px_rgba(100,53,172,0.4)] ${railOpen ? 'aspect-video max-h-[46dvh] lg:aspect-auto lg:max-h-none' : ''}`}`}
                     >
                         {/* Top bar */}
                         <div
@@ -300,7 +273,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                         >
                             <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-transparent pointer-events-none" />
 
-                            {/* Left: leave + brand */}
+                            {/* Left: leave + brand + desktop people strip */}
                             <div className="relative flex items-center gap-2 sm:gap-3 min-w-0">
                                 <button
                                     onClick={() => setShowLeaveModal(true)}
@@ -312,18 +285,31 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                                 <div className="hidden md:block">
                                     <BrandLogo size="sm" />
                                 </div>
+                                <PeopleStrip
+                                    participants={participants}
+                                    hostId={hostId}
+                                    selfId={selfId}
+                                    onClick={() => openTab('people')}
+                                />
                             </div>
 
-                            {/* Right: mode + panel toggles */}
+                            {/* Right: invite + mode + chat */}
                             <div className="relative flex items-center gap-2">
-                                <SessionInfo socket={socket} sessionMode={sessionMode} isHost={isHost} />
+                                <InviteButton
+                                    sessionId={sessionId}
+                                    sessionPassword={sessionPassword}
+                                    variant="prominent"
+                                />
 
                                 <div className="w-px h-5 bg-white/10 mx-0.5 hidden sm:block" />
 
+                                <SessionInfo socket={socket} sessionMode={sessionMode} isHost={isHost} />
+
+                                {/* Mobile-only people toggle (desktop uses PeopleStrip) */}
                                 <button
                                     onClick={() => openTab('people')}
                                     title="People"
-                                    className={`relative flex items-center gap-1.5 h-9 px-3 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${showPanel && activeTab === 'people'
+                                    className={`lg:hidden relative flex items-center gap-1.5 h-9 px-3 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${railOpen && activeTab === 'people'
                                         ? 'bg-brand-primary/20 border-brand-primary/40 text-white'
                                         : 'bg-black/40 border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
                                 >
@@ -333,8 +319,8 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
 
                                 <button
                                     onClick={() => openTab('chat')}
-                                    title="Chat"
-                                    className={`relative flex items-center justify-center h-9 w-9 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${showPanel && activeTab === 'chat'
+                                    title={railOpen && activeTab === 'chat' ? 'Hide chat' : 'Show chat'}
+                                    className={`relative flex items-center justify-center h-9 w-9 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${railOpen && activeTab === 'chat'
                                         ? 'bg-brand-primary/20 border-brand-primary/40 text-white'
                                         : 'bg-black/40 border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
                                 >
@@ -348,7 +334,6 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                             </div>
                         </div>
 
-                        {/* Player */}
                         <VideoPlayer
                             socket={socket}
                             sessionId={sessionId}
@@ -361,21 +346,20 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                         />
                     </div>
 
-                    {/* ===== Side panel (Teleparty rail) =====
-                        Fullscreen: always on, fixed width, slides in from the right,
-                        video shrinks so the full frame stays visible.
-                        Normal: same rail on desktop; stacks below stage on mobile;
-                        can be dismissed. */}
+                    {/* ===== Chat / People rail =====
+                        Fullscreen: slides beside the video (Teleparty split) when open;
+                        collapses to width 0 when hidden so video goes full-bleed. */}
                     <aside
-                        className={`flex flex-col min-h-0 bg-[#05050d] overflow-hidden transition-[width,margin] duration-300 ease-out ${isFullscreen
-                            ? 'h-full border-l border-white/10 shrink-0'
-                            : showPanel
+                        className={`flex flex-col min-h-0 bg-[#05050d] overflow-hidden transition-[width,margin,opacity] duration-300 ease-out ${isFullscreen
+                            ? `h-full shrink-0 ${railOpen ? 'border-l border-white/10' : 'border-0 opacity-0 pointer-events-none'}`
+                            : railOpen
                                 ? 'flex-1 w-full border-t border-white/10 sm:border sm:rounded-2xl lg:flex-none lg:w-[360px] lg:h-full lg:ml-4 lg:border-t-0'
-                                : 'hidden lg:block lg:w-0 lg:ml-0 lg:border-0'}`}
-                        style={isFullscreen ? FS_PANEL_STYLE : undefined}
-                        aria-hidden={!showPanel}
+                                : 'hidden lg:block lg:w-0 lg:ml-0 lg:border-0 lg:opacity-0 lg:pointer-events-none'}`}
+                        style={isFullscreen
+                            ? (railOpen ? FS_PANEL_STYLE : { width: 0 })
+                            : undefined}
+                        aria-hidden={!railOpen}
                     >
-                        {/* Fixed-width inner so content doesn't reflow while the rail slides */}
                         <div
                             className={`h-full w-full flex flex-col min-h-0 ${isFullscreen ? '' : 'lg:w-[360px]'}`}
                             style={isFullscreen ? FS_PANEL_STYLE : undefined}

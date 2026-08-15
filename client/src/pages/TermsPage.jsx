@@ -54,7 +54,7 @@ export default function TermsPage() {
                     </h3>
                     <p>
                         Fliccs is owned and operated by <a href="https://rajinkhan.com/about" target="_blank" rel="noopener noreferrer" className="text-white hover:text-brand-primary transition-colors border-b border-white/30 hover:border-brand-primary">Adib Ar Rahman Khan (also known as{' '}
-                            <span className="font-la-belle-aurore inline-block text-[1.12em] leading-none align-baseline">
+                            <span className="font-la-belle-aurore inline-block text-[1.3em] leading-none align-baseline px-0.5 pb-1 -mb-1">
                                 Rajin Khan
                             </span>
                         )</a>.

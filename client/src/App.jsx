@@ -127,7 +127,7 @@ function MainApp() {
 
                     {/* Footer island */}
                     <footer className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 w-full px-3 text-center pointer-events-none">
-                        <div className="pointer-events-auto inline-flex max-w-full items-center justify-center gap-x-4 gap-y-1 rounded-full border border-white/10 bg-[#050505]/95 px-4 py-2.5 text-[10px] font-medium uppercase tracking-widest text-white/40 shadow-lg backdrop-blur-xl md:gap-x-6 md:px-8 md:text-xs">
+                        <div className="pointer-events-auto inline-flex max-w-full items-center justify-center gap-x-4 gap-y-1 rounded-full border border-white/10 bg-[#050505]/95 px-4 py-2.5 text-[10px] font-medium uppercase tracking-widest text-white/40 shadow-lg backdrop-blur-xl font-barlow md:gap-x-6 md:px-8 md:text-xs">
                             <span className="font-medium bg-gradient-to-r from-purple-400/60 via-gray-400 to-purple-400/60 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine">Fliccs &bull; 2026</span>
                             <a href="/pricing" className="hover:text-white transition-colors">Pricing</a>
                             <a href="/terms-and-conditions" className="hover:text-white transition-colors">Terms</a>

@@ -3,6 +3,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+    font-family: 'La Belle Aurore';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/assets/fonts/la-belle-aurore-latin.woff2') format('woff2');
+}
+
+.font-la-belle-aurore {
+    font-family: 'La Belle Aurore', 'Bradley Hand', 'Segoe Print', cursive;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
 /* Optional: Basic body styling */
 body {
     @apply bg-dark-bg text-gray-200 antialiased;

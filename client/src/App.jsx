@@ -133,7 +133,7 @@ function MainApp() {
                             <a href="/terms-and-conditions" className="hover:text-white transition-colors">Terms</a>
                             <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
                             <a href="/refund" className="hover:text-white transition-colors">Refund</a>
-                            <a href="https://rajinkhan.com" target="_blank" rel="noopener noreferrer" className="font-la-belle-aurore text-[1.15rem] md:text-[1.25rem] leading-none px-0.5 pb-1 -mb-1 bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine hover:opacity-80 transition-opacity">Rajin Khan</a>
+                            <a href="https://rajinkhan.com" target="_blank" rel="noopener noreferrer" className="font-la-belle-aurore text-[0.95rem] md:text-[1.05rem] leading-[1.4] px-0.5 bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine hover:opacity-80 transition-opacity">Rajin Khan</a>
                         </div>
                     </footer>
                 </>

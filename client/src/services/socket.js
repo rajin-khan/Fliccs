@@ -1,11 +1,15 @@
 // client/src/services/socket.js
 import { io } from 'socket.io-client';
 
-// Ensure this URL points to your server (running on port 3001 by default)
-const URL = import.meta.env.VITE_SERVER_URL;
+// Railway serves the client and Socket.IO from the same origin. Keeping the
+// production URL implicit prevents a local development URL from being baked
+// into the deployed bundle.
+const configuredUrl = import.meta.env.VITE_SERVER_URL?.trim();
+const URL = import.meta.env.DEV ? (configuredUrl || 'http://localhost:3001') : undefined;
 
 export const socket = io(URL, {
-  autoConnect: false // We will connect manually
+  autoConnect: false,
+  transports: ['websocket', 'polling']
 });
 
 // Optional: Log socket events for debugging

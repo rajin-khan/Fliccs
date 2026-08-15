@@ -68,7 +68,7 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
     const [showPrivacy, setShowPrivacy] = useState(false);
 
     return (
-        <div className="min-h-screen bg-brand-bg w-full flex flex-col font-barlow overflow-hidden relative selection:bg-brand-primary selection:text-white">
+        <div className="min-h-[100dvh] bg-brand-bg w-full flex flex-col font-barlow overflow-x-hidden relative selection:bg-brand-primary selection:text-white">
             {/* Background Visuals */}
             <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-primary/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none animate-pulse" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-accent/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none" />
@@ -101,7 +101,7 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 w-full max-w-6xl mx-auto mt-8 md:mt-0 mb-12 lg:mb-0">
+            <main className="flex-1 flex flex-col items-center justify-center px-6 pb-32 pt-28 relative z-10 w-full max-w-6xl mx-auto md:py-28">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-8 w-full items-center">
 
                     {/* Left Column: Hero Text */}

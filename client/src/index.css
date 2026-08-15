@@ -1,4 +1,6 @@
 /* client/src/index.css */
+@import './policy.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

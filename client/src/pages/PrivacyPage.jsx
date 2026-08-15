@@ -3,11 +3,11 @@ import PageLayout from '../components/Layout/PageLayout';
 
 export default function PrivacyPage() {
     return (
-        <PageLayout title="Privacy Policy">
-            <div className="prose prose-invert prose-lg max-w-none text-gray-400 font-light leading-loose space-y-12">
-                <div>
-                    <p className="text-sm text-brand-primary font-bold uppercase tracking-widest mb-6">Last updated: January 2026</p>
-                    <p className="text-xl text-white/80 font-normal">
+        <PageLayout title="Privacy Policy" description="What Fliccs keeps, what it never keeps, and how your sessions remain private.">
+            <div className="policy-content">
+                <div className="policy-intro">
+                    <p className="policy-kicker">Last updated: January 2026</p>
+                    <p className="policy-lead">
                         Your privacy is non-negotiable. Fliccs is built to be ephemeral, meaning we don't store what you don't ask us to.
                     </p>
                 </div>
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
 
                 <section>
                     <h3 className="text-2xl text-white font-medium mb-6 flex items-center gap-3">
-                        <span className="text-brand-primary/50">03.</span> Session Ephermerality
+                        <span className="text-brand-primary/50">03.</span> Session Ephemerality
                     </h3>
                     <p>
                         Fliccs sessions are designed to be ephemeral. We do not persistently store chat logs, file metadata, or stream contents after a session has ended. Once a room is destroyed, the data is gone.

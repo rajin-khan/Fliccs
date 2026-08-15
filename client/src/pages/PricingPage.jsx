@@ -1,6 +1,6 @@
 import React from 'react';
 import PageLayout from '../components/Layout/PageLayout';
-import { FaCheck, FaTimes, FaGem, FaCrown } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
 
 export default function PricingPage() {
 
@@ -60,7 +60,11 @@ export default function PricingPage() {
     ];
 
     return (
-        <PageLayout title="Choose Your Tier.">
+        <PageLayout
+            title="Choose Your Tier."
+            description="Watch together for free, or unlock larger rooms and premium streaming features."
+            surface={false}
+        >
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
                 {plans.map((plan) => (
                     <div

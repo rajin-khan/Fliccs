@@ -3,11 +3,11 @@ import PageLayout from '../components/Layout/PageLayout';
 
 export default function RefundPage() {
     return (
-        <PageLayout title="Refund Policy">
-            <div className="prose prose-invert prose-lg max-w-none text-gray-400 font-light leading-loose space-y-12">
-                <div>
-                    <p className="text-sm text-brand-primary font-bold uppercase tracking-widest mb-6">Last updated: January 2026</p>
-                    <p className="text-xl text-white/80 font-normal">
+        <PageLayout title="Refund Policy" description="A straightforward refund and cancellation policy for Fliccs Premium.">
+            <div className="policy-content">
+                <div className="policy-intro">
+                    <p className="policy-kicker">Last updated: January 2026</p>
+                    <p className="policy-lead">
                         We want you to be happy with Fliccs Premium. If it's not working out, we've got you covered.
                     </p>
                 </div>

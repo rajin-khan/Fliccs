@@ -1,0 +1,88 @@
+html {
+    scroll-behavior: smooth;
+    background: #05050a;
+}
+
+.policy-content {
+    color: rgb(255 255 255 / 0.52);
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.75;
+}
+
+.policy-intro {
+    max-width: 48rem;
+    padding-bottom: 2rem;
+}
+
+.policy-kicker {
+    margin: 0 0 0.9rem;
+    color: rgb(168 122 233 / 0.9);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.policy-lead {
+    margin: 0;
+    color: rgb(255 255 255 / 0.82);
+    font-size: clamp(1.18rem, 2.4vw, 1.55rem);
+    font-weight: 300;
+    line-height: 1.45;
+    letter-spacing: -0.012em;
+    text-wrap: pretty;
+}
+
+.policy-content section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
+    padding: 2rem 0;
+    border-top: 1px solid rgb(255 255 255 / 0.07);
+}
+
+.policy-content section:last-child {
+    padding-bottom: 0;
+}
+
+.policy-content h3 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin: 0;
+    color: rgb(255 255 255 / 0.9);
+    font-size: 1.08rem;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.policy-content h3 span {
+    color: rgb(139 82 213 / 0.78);
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+}
+
+.policy-content section > p {
+    max-width: 46rem;
+    margin: 0;
+    text-wrap: pretty;
+}
+
+.policy-signature {
+    display: inline-block;
+    padding-inline: 0.12rem;
+    color: inherit;
+    font-size: 1.18em;
+    line-height: 1;
+    vertical-align: baseline;
+}
+
+@media (min-width: 768px) {
+    .policy-content section {
+        grid-template-columns: minmax(11rem, 0.72fr) minmax(0, 2fr);
+        gap: 3rem;
+        padding: 2.5rem 0;
+    }
+}

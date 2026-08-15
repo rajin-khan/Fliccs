@@ -125,15 +125,15 @@ function MainApp() {
                         onSessionStart={(pwd) => setSessionPassword(pwd)}
                     />
 
-                    {/* Footer Links - Absolute position on Landing */}
-                    <footer className="fixed bottom-4 w-full text-center pointer-events-none z-50">
-                        <div className="pointer-events-auto inline-flex gap-4 md:gap-6 text-[10px] md:text-xs text-white/40 uppercase tracking-widest font-medium bg-[#050505] px-4 md:px-8 py-3 rounded-full border border-white/10 shadow-lg font-barlow items-center flex-wrap justify-center">
+                    {/* Footer island */}
+                    <footer className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 w-full px-3 text-center pointer-events-none">
+                        <div className="pointer-events-auto inline-flex max-w-full items-center justify-center gap-x-4 gap-y-1 rounded-full border border-white/10 bg-[#050505]/95 px-4 py-2.5 text-[10px] font-medium uppercase tracking-widest text-white/40 shadow-lg backdrop-blur-xl md:gap-x-6 md:px-8 md:text-xs">
                             <span className="font-medium bg-gradient-to-r from-purple-400/60 via-gray-400 to-purple-400/60 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine">Fliccs &bull; 2026</span>
                             <a href="/pricing" className="hover:text-white transition-colors">Pricing</a>
                             <a href="/terms-and-conditions" className="hover:text-white transition-colors">Terms</a>
                             <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
                             <a href="/refund" className="hover:text-white transition-colors">Refund</a>
-                            <a href="https://rajinkhan.com" target="_blank" rel="noopener noreferrer" className="font-la-belle-aurore text-[0.95rem] md:text-[1.05rem] leading-[1.4] px-0.5 bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine hover:opacity-80 transition-opacity">Rajin Khan</a>
+                            <a href="https://rajinkhan.com" target="_blank" rel="noopener noreferrer" className="font-la-belle-aurore inline-flex h-[1.35em] items-center px-0.5 text-[0.76rem] leading-none normal-case bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine hover:opacity-80 transition-opacity md:text-[0.86rem]">Rajin Khan</a>
                         </div>
                     </footer>
                 </>

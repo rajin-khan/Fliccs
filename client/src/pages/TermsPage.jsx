@@ -3,11 +3,11 @@ import PageLayout from '../components/Layout/PageLayout';
 
 export default function TermsPage() {
     return (
-        <PageLayout title="Terms of Service">
-            <div className="prose prose-invert prose-lg max-w-none text-gray-400 font-light leading-loose space-y-12">
-                <div>
-                    <p className="text-sm text-brand-primary font-bold uppercase tracking-widest mb-6">Last updated: January 2026</p>
-                    <p className="text-xl text-white/80 font-normal">
+        <PageLayout title="Terms of Service" description="The plain-language rules for using Fliccs and its services.">
+            <div className="policy-content">
+                <div className="policy-intro">
+                    <p className="policy-kicker">Last updated: January 2026</p>
+                    <p className="policy-lead">
                         Welcome to Fliccs. By accessing or using our website and services, you agree to be bound by these Terms of Service and all applicable laws and regulations.
                     </p>
                 </div>
@@ -54,7 +54,7 @@ export default function TermsPage() {
                     </h3>
                     <p>
                         Fliccs is owned and operated by <a href="https://rajinkhan.com/about" target="_blank" rel="noopener noreferrer" className="text-white hover:text-brand-primary transition-colors border-b border-white/30 hover:border-brand-primary">Adib Ar Rahman Khan (also known as{' '}
-                            <span className="font-la-belle-aurore inline-block text-[1.3em] leading-none align-baseline px-0.5 pb-1 -mb-1">
+                            <span className="font-la-belle-aurore policy-signature">
                                 Rajin Khan
                             </span>
                         )</a>.

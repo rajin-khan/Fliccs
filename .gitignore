@@ -4,10 +4,10 @@ context.md
 monetization_plan.md
 pre_monetization_plan.md
 */.env
-# Ignore node_modules and build artifacts
+# Ignore node_modules and build artifacts.
+# client/dist is produced on Railway during `npm run build`; do not commit it.
 node_modules/
 dist/
-!client/dist
 *.log
 
 # Ignore environment files
@@ -26,7 +26,3 @@ dist/
 # Ignore client/server lockfiles if not root-level
 client/package-lock.json
 server/package-lock.json
-
-# DO NOT IGNORE the final built frontend files (they need to be served)
-# So we do NOT ignore this (used by Express):
-# /server/client-dist

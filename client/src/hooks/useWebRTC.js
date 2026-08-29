@@ -4,9 +4,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 
 export const turnCredentials = {
-  lastResetTimestamp: '2026-08-29 18:54', // <--- UPDATE THIS (e.g., "2024-08-02 15:30")
-  username: "d72e45d4900115636f469dcca1273b3f6dc78f3e0cab54ddb99d63085fa97cd1", // <--- UPDATE THIS
-  credential: "9wIm91VT4ZghI3ezjjY5X5zrnVh69pOX0hgpOsmakfc=", // <--- UPDATE THIS
+  lastResetTimestamp: '2026-08-30 00:00', // <--- UPDATE THIS (e.g., "2024-08-02 15:30")
+  username: "112a645dee218617471c456832bb2a8714c3dfe15af6d48bd0ca582551c80796", // <--- UPDATE THIS
+  credential: "fp4Vnjacbsrse7OIaY1YiHmFmo4AJzNrtAwNFyPPjOM=", // <--- UPDATE THIS
 };
 
 // Split TURN servers into separate entries for better compatibility

@@ -3,6 +3,7 @@ twilioturnservercurl.md
 context.md
 monetization_plan.md
 pre_monetization_plan.md
+cron.md
 */.env
 # Ignore node_modules and build artifacts.
 # client/dist is produced on Railway during `npm run build`; do not commit it.

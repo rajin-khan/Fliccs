@@ -1,20 +1,13 @@
-// client/src/components/Landing.jsx (Refactored Option 1)
-import React, { useState, useEffect, useRef } from 'react';
-import { FaTimes, FaRocket, FaUsers, FaShieldAlt } from 'react-icons/fa';
-import VideoPlayer from './VideoPlayer';
+import { useState, useEffect, useRef } from 'react';
+import { FaRocket, FaUsers, FaShieldAlt } from 'react-icons/fa';
 import CreateSession from './Session/Create';
 import JoinSession from './Session/Join';
 import ServerStatusTimer from './Session/ServerStatusTimer';
 import BrandLogo from './BrandLogo';
 import visionImg from '../assets/promo/vision.png';
-import syncImg from '../assets/promo/sync.png';
-import streamImg from '../assets/promo/stream.png';
-import privacyImg from '../assets/promo/privacy.png';
 
 // Modals
 import PremiumModal from './Premium/PremiumModal';
-import TermsModal from './Legal/TermsModal';
-import PrivacyModal from './Legal/PrivacyPolicyModal'; // Corrected Import
 
 // Helper for smooth height transitions
 const SmoothHeightWrapper = ({ children }) => {
@@ -30,7 +23,7 @@ const SmoothHeightWrapper = ({ children }) => {
         });
         resizeObserver.observe(contentRef.current);
         return () => resizeObserver.disconnect();
-    }, [children]);
+    }, []);
 
     return (
         <div
@@ -64,8 +57,6 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
     }, [showInfo]);
 
     const [showPremium, setShowPremium] = useState(false);
-    const [showTerms, setShowTerms] = useState(false);
-    const [showPrivacy, setShowPrivacy] = useState(false);
 
     return (
         <div className="min-h-[100dvh] bg-brand-bg w-full flex flex-col font-barlow overflow-x-hidden relative selection:bg-brand-primary selection:text-white">
@@ -100,8 +91,8 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
                 </div>
             </header>
 
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col items-center justify-center px-6 pb-32 pt-28 relative z-10 w-full max-w-6xl mx-auto md:py-28">
+            <a href="#landing-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-white focus:text-black focus:px-4 focus:py-2">Skip to content</a>
+            <main id="landing-content" className="flex-1 flex flex-col items-center justify-center px-6 pb-32 pt-28 relative z-10 w-full max-w-6xl mx-auto md:py-28">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-8 w-full items-center">
 
                     {/* Left Column: Hero Text */}
@@ -131,12 +122,14 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
                             {/* Buttons */}
                             <button
                                 onClick={() => setMode('create')}
+                                aria-pressed={mode === 'create'}
                                 className={`relative z-10 w-28 py-3 rounded-full text-sm tracking-widest font-medium transition-colors duration-300 shrink-0 ${mode === 'create' ? 'text-black font-bold' : 'text-gray-500 hover:text-gray-300'}`}
                             >
                                 HOST
                             </button>
                             <button
                                 onClick={() => setMode('join')}
+                                aria-pressed={mode === 'join'}
                                 className={`relative z-10 w-28 py-3 rounded-full text-sm tracking-widest font-medium transition-colors duration-300 shrink-0 ${mode === 'join' ? 'text-black font-bold' : 'text-gray-500 hover:text-gray-300'}`}
                             >
                                 JOIN
@@ -150,16 +143,16 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
                     <div className="relative w-full max-w-md mx-auto perspective-1000">
                         <div className="absolute inset-0 bg-brand-primary/20 blur-[60px] rounded-full -z-10" />
 
-                        <div className="bg-[#080808]/95 border border-white/10 rounded-[2rem] shadow-2xl ring-1 ring-white/5 transition-all duration-500 hover:shadow-brand-primary/20 hover:scale-[1.01] overflow-hidden">
+                        <div className="bg-[#080808]/95 border border-white/10 rounded-[2rem] shadow-2xl ring-1 ring-white/5 transition-all duration-500 hover:shadow-brand-primary/20 overflow-hidden">
                             <SmoothHeightWrapper>
                                 {mode === 'create' ? (
-                                    <div key="create" className="p-8 animate-fade-in-fast">
-                                        <h2 className="text-2xl text-white mb-6 font-light">Start a Session</h2>
+                                    <div key="create" className="p-6 sm:p-8 animate-fade-in-fast">
+                                        <h2 className="text-2xl text-white mb-6 font-light">Start a session</h2>
                                         <CreateSession socket={socket} isConnected={isConnected} onSessionStart={onSessionStart} />
                                     </div>
                                 ) : (
-                                    <div key="join" className="p-8 animate-fade-in-fast">
-                                        <h2 className="text-2xl text-white mb-6 font-light">Join a Stream</h2>
+                                    <div key="join" className="p-6 sm:p-8 animate-fade-in-fast">
+                                        <h2 className="text-2xl text-white mb-6 font-light">Join a stream</h2>
                                         <JoinSession socket={socket} isConnected={isConnected} onSessionStart={onSessionStart} />
                                     </div>
                                 )}
@@ -204,6 +197,7 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
                         <div className="p-6 md:p-12 md:w-2/3 relative flex flex-col">
                             <button
                                 onClick={() => setShowInfo(false)}
+                                aria-label="Close about details"
                                 className="absolute top-4 right-4 md:top-6 md:right-6 text-white/30 hover:text-white text-2xl transition-all duration-300 transform hover:scale-110 hover:rotate-90 origin-center z-20"
                             >
                                 &times;
@@ -259,8 +253,6 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
 
             {/* Premium, Terms, Privacy Modals */}
             <PremiumModal isOpen={showPremium} onClose={() => setShowPremium(false)} />
-            <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
-            <PrivacyModal show={showPrivacy} onClose={() => setShowPrivacy(false)} />
         </div>
     );
 }

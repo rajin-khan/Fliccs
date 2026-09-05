@@ -133,11 +133,6 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
         // Broadcast: Inform all clients of the mode change via the participants update
         io.to(sessionId).emit('session:participants', { participants: session.users, mode: session.mode });
 
-        // --- Optional: Notify about mode change specifically ---
-        // You could also emit a dedicated event if needed for specific UI updates
-        // io.to(sessionId).emit('session:mode_changed', { mode: session.mode });
-        // For now, updating via 'session:participants' is sufficient.
-        // --- End Optional ---
     } else {
         console.log(`[session] Mode for session ${sessionId} is already ${mode}. No change needed.`);
     }
@@ -204,14 +199,12 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
     const sessionId = socketToSessionMap.get(socket.id);
     if (!sessionId) {
       // User disconnected before joining or after leaving a session, normal.
-      // console.log(`[disconnect] Socket ${socket.id} disconnected without active session.`);
       return;
     }
 
     const session = sessions.get(sessionId);
     // If session doesn't exist, it was likely already cleaned up (e.g., by host leaving)
     if (!session) {
-      // console.log(`[disconnect] Session ${sessionId} not found for disconnected socket ${socket.id}. Already cleaned up?`);
       socketToSessionMap.delete(socket.id); // Clean up map just in case
       return;
     }
@@ -322,22 +315,18 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
   socket.on('webrtc:ice-candidate', ({ targetUserId, candidate }) => {
     const sessionId = socketToSessionMap.get(socket.id);
     if (!sessionId) {
-       // console.warn(`[webrtc:ice-candidate] Received from socket ${socket.id} not in a session.`); // Can be noisy
        return;
     }
     if (!targetUserId || !candidate) {
-       // console.warn(`[webrtc:ice-candidate] Invalid payload from ${socket.id} in session ${sessionId}.`); // Can be noisy
        return;
     }
      const session = sessions.get(sessionId);
      // Optional: Verify targetUserId is actually in the session
     if (!session || !session.users.some(u => u.id === targetUserId)) {
-        // console.warn(`[webrtc:ice-candidate] Target user ${targetUserId} not found in session ${sessionId} for candidate from ${socket.id}`); // Can be noisy
         return;
     }
 
     // Relay ICE candidate ONLY to the target peer
-    // console.log(`[webrtc] Relaying ICE candidate from ${socket.id} to ${targetUserId} in session ${sessionId}`); // Usually too noisy to log every candidate
     socket.to(targetUserId).emit('webrtc:ice-candidate', {
       fromUserId: socket.id, // Let the recipient know whose candidate this is
       candidate: candidate

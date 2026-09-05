@@ -11,16 +11,3 @@ export const socket = io(URL, {
   autoConnect: false,
   transports: ['websocket', 'polling']
 });
-
-// Optional: Log socket events for debugging
-socket.on('connect', () => {
-  console.log('Socket connected:', socket.id);
-});
-
-socket.on('disconnect', (reason) => {
-  console.log('Socket disconnected:', reason);
-});
-
-socket.on('connect_error', (error) => {
-  console.error('Socket connection error:', error);
-});

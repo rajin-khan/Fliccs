@@ -1,5 +1,5 @@
 // client/src/components/Premium/PremiumModal.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaCheck, FaTimes, FaGem, FaInfinity, FaServer, FaMicrophone } from 'react-icons/fa';
 import BrandLogo from '../BrandLogo';
 import premiumImg from '../../assets/promo/premium.png';
@@ -57,6 +57,7 @@ export default function PremiumModal({ isOpen, onClose }) {
                     {/* Close Button */}
                     <button
                         onClick={onClose}
+                        aria-label="Close premium details"
                         className="absolute top-4 right-4 md:top-6 md:right-6 text-white/30 hover:text-white transition-all duration-300 p-2 z-50 transform hover:scale-110 hover:rotate-90 origin-center"
                     >
                         <FaTimes size={16} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import VideoPlayer from './VideoPlayer';
 import Chat from './Chat';
 import Participants from './Session/Participants';
@@ -46,8 +46,8 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
     const barTimerRef = useRef(null);
 
     const selfId = socket?.id;
-    const hostId = useMemo(() => participants[0]?.id, [participants]);
-    const isHost = useMemo(() => selfId === hostId, [selfId, hostId]);
+    const hostId = participants[0]?.id;
+    const isHost = selfId === hostId;
 
     // --- Session data ---
     useEffect(() => {
@@ -236,14 +236,12 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                         sessionPassword={sessionPassword}
                     />
                 ) : (
-                    <Chat socket={socket} sessionId={sessionId} messages={messages} sendMessage={sendMessage} />
+                    <Chat socket={socket} messages={messages} sendMessage={sendMessage} />
                 )}
             </div>
         </>
     );
 
-    // Rail visibility drives both layout and FS Teleparty split
-    const railOpen = panelOpen;
 
     return (
         <>
@@ -270,7 +268,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                     <div
                         className={`relative bg-black overflow-hidden min-h-0 flex-1 ${isFullscreen
                             ? 'rounded-none h-full'
-                            : `w-full border border-white/10 rounded-none sm:rounded-2xl lg:h-full shadow-[0_0_80px_-30px_rgba(100,53,172,0.4)] ${railOpen ? 'aspect-video max-h-[46dvh] lg:aspect-auto lg:max-h-none' : ''}`}`}
+                            : `w-full border border-white/10 rounded-none sm:rounded-2xl lg:h-full shadow-[0_0_80px_-30px_rgba(100,53,172,0.4)] ${panelOpen ? 'aspect-video max-h-[46dvh] lg:aspect-auto lg:max-h-none' : ''}`}`}
                     >
                         {/* Top bar */}
                         <div
@@ -282,6 +280,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                             <div className="relative flex items-center gap-2 sm:gap-3 min-w-0">
                                 <button
                                     onClick={() => setShowLeaveModal(true)}
+                                    aria-label="Leave session"
                                     className="flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 text-[11px] font-semibold tracking-wider text-red-400 hover:text-red-300 hover:border-red-500/30 px-3 sm:px-4 py-2 rounded-full uppercase transition-all active:scale-[0.97] group"
                                 >
                                     <FaArrowLeft className="text-[10px] group-hover:-translate-x-0.5 transition-transform" />
@@ -314,7 +313,7 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                                 <button
                                     onClick={() => openTab('people')}
                                     title="People"
-                                    className={`lg:hidden relative flex items-center gap-1.5 h-9 px-3 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${railOpen && activeTab === 'people'
+                                    className={`lg:hidden relative flex items-center gap-1.5 h-9 px-3 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${panelOpen && activeTab === 'people'
                                         ? 'bg-brand-primary/20 border-brand-primary/40 text-white'
                                         : 'bg-black/40 border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
                                 >
@@ -324,8 +323,8 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
 
                                 <button
                                     onClick={() => openTab('chat')}
-                                    title={railOpen && activeTab === 'chat' ? 'Hide chat' : 'Show chat'}
-                                    className={`relative flex items-center justify-center h-9 w-9 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${railOpen && activeTab === 'chat'
+                                    title={panelOpen && activeTab === 'chat' ? 'Hide chat' : 'Show chat'}
+                                    className={`relative flex items-center justify-center h-9 w-9 rounded-full border backdrop-blur-md transition-all active:scale-[0.97] ${panelOpen && activeTab === 'chat'
                                         ? 'bg-brand-primary/20 border-brand-primary/40 text-white'
                                         : 'bg-black/40 border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
                                 >
@@ -356,14 +355,15 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
                         collapses to width 0 when hidden so video goes full-bleed. */}
                     <aside
                         className={`flex flex-col min-h-0 bg-[#05050d] overflow-hidden transition-[width,margin,opacity] duration-300 ease-out ${isFullscreen
-                            ? `h-full shrink-0 ${railOpen ? 'border-l border-white/10' : 'border-0 opacity-0 pointer-events-none'}`
-                            : railOpen
+                            ? `h-full shrink-0 ${panelOpen ? 'border-l border-white/10' : 'border-0 opacity-0 pointer-events-none'}`
+                            : panelOpen
                                 ? 'flex-1 w-full border-t border-white/10 sm:border sm:rounded-2xl lg:flex-none lg:w-[360px] lg:h-full lg:ml-4 lg:border-t-0'
                                 : 'hidden lg:block lg:w-0 lg:ml-0 lg:border-0 lg:opacity-0 lg:pointer-events-none'}`}
                         style={isFullscreen
-                            ? (railOpen ? FS_PANEL_STYLE : { width: 0 })
+                            ? (panelOpen ? FS_PANEL_STYLE : { width: 0 })
                             : undefined}
-                        aria-hidden={!railOpen}
+                        aria-hidden={!panelOpen}
+                        inert={!panelOpen}
                     >
                         <div
                             className={`h-full w-full flex flex-col min-h-0 ${isFullscreen ? '' : 'lg:w-[360px]'}`}

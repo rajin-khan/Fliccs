@@ -77,31 +77,7 @@ io.on('connection', (socket) => {
   registerSyncHandlers(io, socket, sessions);
   registerChatHandlers(io, socket, sessions);
   
-  socket.on('disconnect', () => {
-    const sessionId = socketToSessionMap.get(socket.id);
-    if (sessionId) {
-      const sessionData = sessions.get(sessionId);
-      if (sessionData) {
-        sessionData.users = sessionData.users.filter(userId => userId !== socket.id);
-        if (sessionData.host === socket.id) {
-          sessions.delete(sessionId);
-          io.to(sessionId).emit('session:host_disconnected', { message: 'Host disconnected.' });
-          io.socketsLeave(sessionId);
-        } else if (sessionData.users.length === 0) {
-          sessions.delete(sessionId);
-        } else {
-          sessions.set(sessionId, sessionData);
-          io.to(sessionId).emit('user:left', { userId: socket.id });
-          const updatedParticipants = sessionData.users.map(id => ({
-            id,
-            nickname: sessionData.nicknames?.[id] || 'Guest'
-          }));
-          io.to(sessionId).emit('session:participants', { participants: updatedParticipants });
-        }
-      }
-      socketToSessionMap.delete(socket.id);
-    }
-  });
+
 });
 
 httpServer.listen(PORT, () => {

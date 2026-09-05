@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 // Add `onSessionStart` to the props
 function CreateSession({ socket, isConnected, onSessionStart }) {
@@ -33,6 +33,7 @@ function CreateSession({ socket, isConnected, onSessionStart }) {
             <div className="w-full">
                 <input
                     type="text"
+                    aria-label="Your Nickname"
                     placeholder="Your Nickname"
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
@@ -44,12 +45,13 @@ function CreateSession({ socket, isConnected, onSessionStart }) {
             </div>
             <input
                 type="password"
-                placeholder="Session Password"
+                aria-label="Session Password"
+                    placeholder="Session Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-5 py-2.5 rounded-xl bg-brand-rich-black/60 border border-brand-tekhelet text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
             />
-            {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+            {error && <p role="alert" className="text-red-400 text-xs text-center">{error}</p>}
             <button
                 onClick={handleCreateSession}
                 disabled={!isConnected || isLoading}

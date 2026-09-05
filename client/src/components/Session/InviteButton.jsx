@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FaLink, FaShareAlt, FaCheckCircle } from 'react-icons/fa';
 
 function buildShareableLink(sessionId, sessionPassword) {

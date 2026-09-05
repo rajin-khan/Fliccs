@@ -1,5 +1,4 @@
 // client/src/components/BrandLogo.jsx
-import React from 'react';
 
 const SIZES = {
   sm: {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 function ChatInput({ onSend }) {
     const [text, setText] = useState('');

@@ -20,59 +20,9 @@
     text-transform: none;
 }
 
-/* Optional: Basic body styling */
 body {
     @apply bg-dark-bg text-gray-200 antialiased;
-    font-family: 'Inter', sans-serif;
-    /* Add a nice font later */
-}
-
-@keyframes slideInRight {
-    0% {
-        transform: translateX(30%);
-        opacity: 0;
-    }
-
-    100% {
-        transform: translateX(0%);
-        opacity: 1;
-    }
-}
-
-@keyframes slideInLeft {
-    0% {
-        transform: translateX(-30%);
-        opacity: 0;
-    }
-
-    100% {
-        transform: translateX(0%);
-        opacity: 1;
-    }
-}
-
-.animate-slide-in-right {
-    animation: slideInRight 0.3s ease-out;
-}
-
-.animate-slide-in-left {
-    animation: slideInLeft 0.3s ease-out;
-}
-
-@keyframes fadeScaleIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.animate-fade-scale-in {
-    animation: fadeScaleIn 0.3s ease-out;
+    font-family: 'Barlow Condensed', sans-serif;
 }
 
 @keyframes shine {
@@ -123,4 +73,32 @@ body {
 
 .animate-fade-in-fast {
     animation: fadeIn 0.25s ease-out forwards;
+}
+/* Shared keyboard and motion behavior across landing, room, and policy pages. */
+:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+}
+
+label:has(input[type="file"]:focus-visible),
+.group\/seek:has(input:focus-visible) {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-radius: 0.75rem;
+}
+
+@media (forced-colors: active) {
+    :focus-visible {
+        outline-color: Highlight;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

@@ -1,6 +1,6 @@
 // client/src/components/Session/ServerStatusTimer.jsx
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FaRegClock } from 'react-icons/fa';
 import { turnCredentials } from '../../hooks/useWebRTC.js';
 

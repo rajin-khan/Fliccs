@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import ReactPlayer from 'react-player';
 import { FaFolderOpen, FaFilm, FaSatelliteDish, FaExclamationTriangle, FaExchangeAlt } from 'react-icons/fa';
 import useVideoSync from './useVideoSync';
@@ -162,10 +162,6 @@ function VideoPlayer({
         };
     }, [resetControlsTimer]);
 
-    // Reset timer on mouse movement or interaction
-    const handlePlayerInteraction = useCallback(() => {
-        resetControlsTimer();
-    }, [resetControlsTimer]);
 
     const handleDuration = (duration) => {
         setPlayerState(prev => ({ ...prev, duration }));
@@ -262,7 +258,6 @@ function VideoPlayer({
         if (!el || !remoteStream || isHost) return;
 
         el.srcObject = remoteStream;
-        el.muted = isGuestMuted;
         const tryPlay = () => {
             el.play().catch((err) => {
                 console.warn('[VideoPlayer] Guest autoplay failed:', err?.message || err);
@@ -352,7 +347,7 @@ function VideoPlayer({
                 <label className="shrink-0 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-full cursor-pointer transition-colors">
                     <FaExchangeAlt className="text-[9px]" />
                     <span className="hidden sm:inline">Change</span>
-                    <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
+                    <input type="file" accept="video/*" onChange={handleFileChange} aria-label="Select video file" className="sr-only" />
                 </label>
             </div>
         </div>
@@ -398,7 +393,7 @@ function VideoPlayer({
                         Browse files
                     </span>
                 </div>
-                <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" key={`${sessionMode}-${fileName}`} />
+                <input type="file" accept="video/*" onChange={handleFileChange} aria-label="Select video file" className="sr-only" key={`${sessionMode}-${fileName}`} />
             </label>
         </div>
     );
@@ -429,9 +424,9 @@ function VideoPlayer({
 
                         <div
                             className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 cursor-none'}`}
-                            onMouseMove={handlePlayerInteraction}
-                            onMouseEnter={handlePlayerInteraction}
-                            onClick={handlePlayerInteraction}
+                            onMouseMove={resetControlsTimer}
+                            onMouseEnter={resetControlsTimer}
+                            onClick={resetControlsTimer}
                         >
                             <div className={`${showControls ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                                 <PlayerControls
@@ -449,11 +444,6 @@ function VideoPlayer({
                                     playedSeconds={0}
                                     loadedSeconds={0}
                                     duration={0}
-                                    onSeek={() => {}}
-                                    onSeekMouseDown={() => {}}
-                                    onSeekMouseUp={() => {}}
-                                    onSkipForward={() => {}}
-                                    onSkipBackward={() => {}}
                                     isHost={false}
                                     sessionMode="stream"
                                     isFullscreen={isFullscreen}
@@ -498,9 +488,9 @@ function VideoPlayer({
                         {/* Controls overlay */}
                         <div
                             className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 cursor-none'}`}
-                            onMouseMove={handlePlayerInteraction}
-                            onMouseEnter={handlePlayerInteraction}
-                            onClick={handlePlayerInteraction}
+                            onMouseMove={resetControlsTimer}
+                            onMouseEnter={resetControlsTimer}
+                            onClick={resetControlsTimer}
                         >
                             <div className={`${showControls ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                                 <PlayerControls

@@ -1,13 +1,12 @@
 // client/src/hooks/useSocket.js
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { socket as socketInstance } from '../services/socket.js';
 
 export function useSocket() {
   const [isConnected, setIsConnected] = useState(socketInstance.connected);
-  const socketRef = useRef(socketInstance);
 
   useEffect(() => {
-    const socket = socketRef.current;
+    const socket = socketInstance;
 
     const handleConnect = () => {
       console.log('[useSocket] Connected');
@@ -40,7 +39,7 @@ export function useSocket() {
   }, []);
 
   return {
-    socket: socketRef.current,
+    socket: socketInstance,
     isConnected,
   };
 }

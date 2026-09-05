@@ -1,5 +1,4 @@
 // client/src/components/Session/ConfirmLeaveModal.jsx
-import React from 'react';
 import { createPortal } from 'react-dom';
 
 /**

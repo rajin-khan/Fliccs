@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 // Add `onSessionStart` to the props
 function JoinSession({ socket, isConnected, onSessionStart }) {
@@ -49,14 +49,16 @@ function JoinSession({ socket, isConnected, onSessionStart }) {
         <div className="flex flex-col items-center space-y-5 w-full font-barlow">
             <input
                 type="text"
-                placeholder="Session ID"
+                aria-label="Session ID"
+                    placeholder="Session ID"
                 value={sessionId}
                 onChange={(e) => setSessionId(e.target.value)}
                 className="w-full px-4 py-2 rounded-lg bg-brand-rich-black border border-brand-primary/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
             />
             <input
                 type="password"
-                placeholder="Session Password"
+                aria-label="Session Password"
+                    placeholder="Session Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 rounded-lg bg-brand-rich-black border border-brand-primary/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
@@ -64,6 +66,7 @@ function JoinSession({ socket, isConnected, onSessionStart }) {
             <div className="w-full">
                 <input
                     type="text"
+                    aria-label="Your Nickname"
                     placeholder="Your Nickname"
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
@@ -74,7 +77,7 @@ function JoinSession({ socket, isConnected, onSessionStart }) {
                 </p>
             </div>
             {error && (
-                <p className="text-xs text-red-400 text-center">{error}</p>
+                <p role="alert" className="text-xs text-red-400 text-center">{error}</p>
             )}
             <button
                 onClick={handleJoin}

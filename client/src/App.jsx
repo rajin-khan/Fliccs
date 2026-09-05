@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import StreamRoom from './components/StreamRoom.jsx';
 import Landing from './components/Landing.jsx';
 import { useSocket } from './hooks/useSocket';
-import TermsModal from './components/Legal/TermsModal.jsx';
-import PrivacyPolicyModal from './components/Legal/PrivacyPolicyModal.jsx';
 import AutoJoinModal from './components/Session/AutoJoinModal.jsx';
-import PremiumModal from './components/Premium/PremiumModal.jsx';
 
 // Static Pages
 import PricingPage from './pages/PricingPage.jsx';
@@ -21,9 +18,6 @@ function MainApp() {
     const [appError, setAppError] = useState(null);
     const [mode, setMode] = useState('create');
     const [participants, setParticipants] = useState([]);
-    const [showTerms, setShowTerms] = useState(false);
-    const [showPrivacy, setShowPrivacy] = useState(false);
-    const [showPremium, setShowPremium] = useState(false);
     const [autoJoinParams, setAutoJoinParams] = useState(null);
 
     const resetSessionState = () => {
@@ -88,22 +82,16 @@ function MainApp() {
         };
     }, [socket, autoJoinParams]);
 
-    // Global Error Display (Toast style)
-    const ErrorToast = ({ message }) => (
-        message ? (
-            <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-[100] animate-fade-in-up">
-                <div className="bg-red-500/10 backdrop-blur-md border border-red-500/50 text-red-100 px-6 py-3 rounded-full shadow-2xl flex items-center gap-3">
-                    <span>⚠️</span>
-                    <span className="text-sm font-medium">{message}</span>
-                    <button onClick={() => setAppError(null)} className="ml-2 opacity-50 hover:opacity-100">×</button>
-                </div>
-            </div>
-        ) : null
-    );
-
     return (
         <>
-            <ErrorToast message={appError} />
+            {appError && (
+                <div role="alert" className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-lg animate-fade-in-up">
+                    <div className="bg-red-950/95 backdrop-blur-md border border-red-500/50 text-red-100 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+                        <span className="text-sm font-medium flex-1">{appError}</span>
+                        <button aria-label="Dismiss error" onClick={() => setAppError(null)} className="h-8 w-8 shrink-0 opacity-70 hover:opacity-100">×</button>
+                    </div>
+                </div>
+            )}
 
             {sessionId ? (
                 <div className="min-h-screen bg-brand-bg text-white font-barlow flex flex-col items-center justify-center">
@@ -122,12 +110,12 @@ function MainApp() {
                         setMode={setMode}
                         socket={socket}
                         isConnected={isConnected}
-                        onSessionStart={(pwd) => setSessionPassword(pwd)}
+                        onSessionStart={setSessionPassword}
                     />
 
                     {/* Footer island */}
                     <footer className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 w-full px-3 text-center pointer-events-none">
-                        <div className="pointer-events-auto inline-flex max-w-full items-center justify-center gap-x-4 gap-y-1 rounded-full border border-white/10 bg-[#050505]/95 px-4 py-2.5 text-[10px] font-medium uppercase tracking-widest text-white/40 shadow-lg backdrop-blur-xl font-barlow md:gap-x-6 md:px-8 md:text-xs">
+                        <div className="pointer-events-auto inline-flex flex-wrap max-w-full items-center justify-center gap-x-4 gap-y-1 rounded-full border border-white/10 bg-[#050505]/95 px-4 py-2.5 text-[10px] font-medium uppercase tracking-widest text-white/40 shadow-lg backdrop-blur-xl font-barlow md:gap-x-6 md:px-8 md:text-xs">
                             <span className="font-medium bg-gradient-to-r from-purple-400/60 via-gray-400 to-purple-400/60 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine">Fliccs &bull; 2026</span>
                             <a href="/pricing" className="hover:text-white transition-colors">Pricing</a>
                             <a href="/terms-and-conditions" className="hover:text-white transition-colors">Terms</a>
@@ -139,9 +127,6 @@ function MainApp() {
                 </>
             )}
 
-            <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
-            <PrivacyPolicyModal show={showPrivacy} onClose={() => setShowPrivacy(false)} />
-            <PremiumModal isOpen={showPremium} onClose={() => setShowPremium(false)} />
 
             {autoJoinParams && !sessionId && (
                 <AutoJoinModal

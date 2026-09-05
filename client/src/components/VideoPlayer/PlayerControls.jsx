@@ -101,6 +101,7 @@ function PlayerControls({
                                     onClick={onSkipBackward}
                                     className="text-white/80 hover:text-white transition-all transform hover:-rotate-12 active:scale-90"
                                     title="-10s"
+                                    aria-label="Skip back 10 seconds"
                                 >
                                     <MdReplay10 className="text-2xl sm:text-[28px]" />
                                 </button>
@@ -119,6 +120,7 @@ function PlayerControls({
                                     onClick={onSkipForward}
                                     className="text-white/80 hover:text-white transition-all transform hover:rotate-12 active:scale-90"
                                     title="+10s"
+                                    aria-label="Skip forward 10 seconds"
                                 >
                                     <MdForward10 className="text-2xl sm:text-[28px]" />
                                 </button>

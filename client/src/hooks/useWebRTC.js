@@ -576,7 +576,6 @@ function useWebRTC({
       console.log('[useWebRTC] Cleanup: closing all connections and stopping streams.');
       closeAllConnections();
       stopLocalStream();
-      pendingCandidates.current.clear();
       setRemoteStream(null);
       setIsStreamingActive(false);
       isStreamingActiveRef.current = false;

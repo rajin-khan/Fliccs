@@ -1,7 +1,6 @@
 // client/src/components/VideoPlayer/useVideoSync.js
 import { useEffect, useRef, useCallback } from 'react';
 
-// --- NEW: Add sessionMode to props ---
 function useVideoSync({ socket, sessionId, playerRef, sessionMode }) {
   // syncLock prevents the client from reacting to sync events
   // that were triggered by its own actions (or the sync mechanism itself).
@@ -9,11 +8,9 @@ function useVideoSync({ socket, sessionId, playerRef, sessionMode }) {
   // the host in stream mode *does* emit some simplified sync event.
   const syncLock = useRef(false);
 
-  // --- MODIFIED: Check sessionMode before emitting ---
   const emitSyncAction = useCallback((action, value) => {
     // Only emit sync actions if in 'sync' mode
     if (sessionMode !== 'sync' || !socket || !sessionId) {
-      // console.log(`[Sync] Action '${action}' blocked in mode '${sessionMode}'`);
       return;
     }
 
@@ -24,11 +21,9 @@ function useVideoSync({ socket, sessionId, playerRef, sessionMode }) {
       timestamp: Date.now(), // Good for potential server-side reconciliation later
       seekTime: value // For play/pause/seek
     });
-  // Add sessionMode and socket to dependencies
   }, [socket, sessionId, sessionMode]);
 
   useEffect(() => {
-    // --- MODIFIED: Only listen if in 'sync' mode and socket exists ---
     if (sessionMode !== 'sync' || !socket) {
       // If not in sync mode or no socket, ensure listener is off
       socket?.off('sync:action'); // Use optional chaining for safety
@@ -63,7 +58,6 @@ function useVideoSync({ socket, sessionId, playerRef, sessionMode }) {
             // is usually acceptable for sync. Seeking first might cause brief playback.
              internalPlayer.pause?.();
              // Optionally seek after pausing if precise position is critical
-             // player.seekTo(seekTime, 'seconds');
             break;
           case 'seek':
             player.seekTo(seekTime, 'seconds');
@@ -94,8 +88,6 @@ function useVideoSync({ socket, sessionId, playerRef, sessionMode }) {
       socket.off('sync:action', handleSyncEvent);
     };
 
-  // --- MODIFIED: Add sessionMode and playerRef to dependency array ---
-  // Rerun effect if socket, sessionId, or sessionMode changes
   }, [socket, sessionId, sessionMode, playerRef]);
 
   // Return the potentially restricted emit function and the lock ref

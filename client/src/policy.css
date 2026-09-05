@@ -46,7 +46,7 @@ html {
     padding-bottom: 0;
 }
 
-.policy-content h3 {
+.policy-content h2 {
     display: flex;
     align-items: baseline;
     gap: 0.75rem;
@@ -57,7 +57,7 @@ html {
     line-height: 1.35;
 }
 
-.policy-content h3 span {
+.policy-content h2 span {
     color: rgb(139 82 213 / 0.78);
     font-size: 0.68rem;
     font-variant-numeric: tabular-nums;

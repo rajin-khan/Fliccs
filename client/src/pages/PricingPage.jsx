@@ -1,4 +1,3 @@
-import React from 'react';
 import PageLayout from '../components/Layout/PageLayout';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 
@@ -91,14 +90,14 @@ export default function PricingPage() {
                         )}
 
                         <div className="mb-8 text-center lg:text-left relative z-10">
-                            <h3 className={`text-xs font-bold uppercase tracking-[0.2em] mb-4 ${plan.theme === 'gold'
+                            <h2 className={`text-xs font-bold uppercase tracking-[0.2em] mb-4 ${plan.theme === 'gold'
                                 ? 'text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow via-white to-brand-yellow bg-[length:200%_auto] animate-shine'
                                 : plan.theme === 'silver'
                                     ? 'text-transparent bg-clip-text bg-gradient-to-r from-brand-primary via-brand-yellow to-brand-primary bg-[length:200%_auto] animate-shine'
                                     : 'text-gray-500'
                                 }`}>
                                 {plan.name}
-                            </h3>
+                            </h2>
                             <div className="flex items-baseline justify-center lg:justify-start gap-1">
                                 <span className={`text-5xl font-semibold tracking-tighter ${plan.theme === 'gold'
                                     ? 'text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow via-white to-brand-yellow bg-[length:200%_auto] animate-shine'

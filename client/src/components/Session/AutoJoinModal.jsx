@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import BrandLogo from '../BrandLogo';
 
 function AutoJoinModal({ sessionId, password, socket, isConnected, onJoin, onCancel }) {
@@ -66,9 +66,10 @@ function AutoJoinModal({ sessionId, password, socket, isConnected, onJoin, onCan
 
                 <div className="flex flex-col space-y-6 relative z-10">
                     <div className="w-full space-y-2">
-                        <label className="text-xs uppercase tracking-widest text-gray-500 font-medium ml-1">Nickname</label>
+                        <label htmlFor="invite-nickname" className="text-xs uppercase tracking-widest text-gray-500 font-medium ml-1">Nickname</label>
                         <input
                             type="text"
+                            id="invite-nickname"
                             placeholder="Enter your name"
                             value={nickname}
                             onChange={(e) => setNickname(e.target.value)}

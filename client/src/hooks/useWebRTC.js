@@ -4,8 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 
 export const turnCredentials = {
-  lastResetTimestamp: '2026-09-07 00:00', // <--- UPDATE THIS (e.g., "2024-08-02 15:30")
-  username: "24ff0514f767fc8df0750d9dbaa5c186591df08abd7e059f1524b3a52bf489ec", // <--- UPDATE THIS
+  lastResetTimestamp: '2026-09-08 00:00', // <--- UPDATE THIS (e.g., "2024-08-02 15:30")
+  username: "7e129ec0b8767fa9cb574b9f13f976dd597eb7277962a3fc66485fb63f7a4cc7", // <--- UPDATE THIS
   credential: "cZ0FT8HbMEBzesvR9NWOxcVxcWrLQYV9rjqQTX+PPaw=", // <--- UPDATE THIS
 };
 
@@ -73,7 +73,7 @@ function useWebRTC({
   sessionMode,
   participants,
   selfId,
-  localStreamSourceElement,
+  localStreamSourceRef,
 }) {
   // peerId -> { pc: RTCPeerConnection, createdAt: number }
   const peerConnections = useRef(new Map());
@@ -93,7 +93,7 @@ function useWebRTC({
   const sessionModeRef = useRef(sessionMode);
   const remoteStreamRef = useRef(remoteStream);
   const isStreamingActiveRef = useRef(isStreamingActive);
-  const localSourceRef = useRef(localStreamSourceElement);
+
   socketRef.current = socket;
   isHostRef.current = isHost;
   participantsRef.current = participants;
@@ -101,7 +101,7 @@ function useWebRTC({
   sessionModeRef.current = sessionMode;
   remoteStreamRef.current = remoteStream;
   isStreamingActiveRef.current = isStreamingActive;
-  localSourceRef.current = localStreamSourceElement;
+
 
   const clearError = useCallback(() => setWebRTCError(null), []);
 
@@ -259,15 +259,15 @@ function useWebRTC({
    */
   const ensureLiveLocalStream = useCallback(() => {
     const existing = localStreamRef.current;
-    if (existing && existing.getTracks().some((t) => t.readyState === 'live')) {
+    if (existing && existing.getVideoTracks().some((t) => t.readyState === 'live')) {
       return existing;
     }
-    const el = localSourceRef.current;
+    const el = localStreamSourceRef.current;
     if (!el) return existing;
     try {
       const fresh = el.captureStream ? el.captureStream() : el.mozCaptureStream?.();
       const freshTracks = fresh ? fresh.getTracks() : [];
-      if (freshTracks.length > 0 && freshTracks.some((t) => t.readyState === 'live')) {
+      if (freshTracks.length > 0 && freshTracks.some((t) => t.kind === 'video' && t.readyState === 'live')) {
         console.log('[WebRTC Host] Local stream tracks had ended — re-captured from source element.');
         if (existing) existing.getTracks().forEach((t) => t.stop());
         localStreamRef.current = fresh;
@@ -278,7 +278,7 @@ function useWebRTC({
       console.warn('[WebRTC Host] Re-capture failed:', error?.message || error);
     }
     return existing;
-  }, []);
+  }, [localStreamSourceRef]);
 
   /**
    * Host: create a fresh connection to one guest and send an offer.
@@ -327,7 +327,7 @@ function useWebRTC({
   const startStreaming = useCallback(async () => {
     if (!isHostRef.current) return;
     if (isStreamingActiveRef.current) return;
-    const sourceEl = localSourceRef.current;
+    const sourceEl = localStreamSourceRef.current;
     if (!sourceEl) {
       console.warn('[WebRTC Host] startStreaming: no source <video> element yet.');
       return;
@@ -343,7 +343,8 @@ function useWebRTC({
       if (!stream) throw new Error('captureStream() is not supported or returned nothing.');
       const tracks = stream.getTracks();
       console.log(`[WebRTC Host] captureStream OK. Tracks: ${tracks.map(t => t.kind).join(', ') || 'none'}`);
-      if (tracks.length === 0) {
+      if (!tracks.some(track => track.kind === 'video' && track.readyState === 'live')) {
+        tracks.forEach(track => track.stop());
         return;
       }
       stopLocalStream();
@@ -363,7 +364,7 @@ function useWebRTC({
     for (const guest of guests) {
       hostConnectToGuest(guest.id);
     }
-  }, [clearError, stopLocalStream, hostConnectToGuest]);
+  }, [clearError, stopLocalStream, hostConnectToGuest, localStreamSourceRef]);
 
   const stopStreaming = useCallback(() => {
     if (!isHostRef.current || !isStreamingActiveRef.current) return;
@@ -503,6 +504,28 @@ function useWebRTC({
     }
   }, [participants, isHost, closePeerConnection]);
 
+  // captureStream can add video/audio tracks after its initial capture.
+  // Rebuild offers when the captured track set changes, even with guests already present.
+  useEffect(() => {
+    if (!isHost || !isStreamingActive) return;
+    const reconcile = () => {
+      const stream = ensureLiveLocalStream();
+      const tracks = stream?.getTracks().filter(track => track.readyState === 'live') || [];
+      if (!tracks.some(track => track.kind === 'video')) return;
+      for (const guest of participantsRef.current) {
+        if (guest.id === selfIdRef.current) continue;
+        const entry = peerConnections.current.get(guest.id);
+        const sent = entry?.pc.getSenders().map(sender => sender.track) || [];
+        if (!entry || tracks.length !== sent.length || tracks.some(track => !sent.includes(track))) {
+          if (entry) closePeerConnection(guest.id);
+          hostConnectToGuest(guest.id);
+        }
+      }
+    };
+    const timer = setInterval(reconcile, 1000);
+    return () => clearInterval(timer);
+  }, [isHost, isStreamingActive, ensureLiveLocalStream, hostConnectToGuest, closePeerConnection]);
+
   // --- Guest: if every track of the remote stream ends (host video ended/reloaded),
   // drop the stream so the self-healing loop below can request a fresh offer. ---
   useEffect(() => {
@@ -523,10 +546,9 @@ function useWebRTC({
 
   // --- Guest: self-healing loop. In stream mode with no stream, ask the host to offer. ---
   useEffect(() => {
-    if (isHost || sessionMode !== 'stream' || !socket || remoteStream) return;
+    if (isHost || sessionMode !== 'stream' || !socket) return;
 
     const check = () => {
-      if (remoteStreamRef.current) return;
       const sock = socketRef.current;
       if (!sock?.connected) return;
 
@@ -538,6 +560,7 @@ function useWebRTC({
       if (entry) {
         const age = Date.now() - entry.createdAt;
         const ice = entry.pc.iceConnectionState;
+        if ((ice === 'connected' || ice === 'completed') && remoteStreamRef.current?.getVideoTracks().some(track => track.readyState === 'live')) return;
         const busy = ice === 'checking' || ice === 'connected' || ice === 'completed' || entry.pc.signalingState === 'have-remote-offer';
         if (busy && age < NEGOTIATION_GRACE_MS) {
           console.log(`[WebRTC Guest] Negotiation with ${hostId} in progress (${ice}, ${Math.round(age / 1000)}s) — waiting.`);

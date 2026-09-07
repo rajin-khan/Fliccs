@@ -51,7 +51,7 @@ function VideoPlayer({
     // Custom Hooks
     const { remoteStream, startStreaming, stopStreaming, isStreamingActive, webRTCError } = useWebRTC({
         socket, sessionId, isHost, sessionMode, participants, selfId,
-        localStreamSourceElement: videoElementRef.current
+        localStreamSourceRef: videoElementRef
     });
 
     const { syncLock, emitSyncAction } = useVideoSync({

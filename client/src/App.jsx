@@ -21,6 +21,7 @@ function MainApp() {
     const [autoJoinParams, setAutoJoinParams] = useState(null);
 
     const resetSessionState = () => {
+        sessionStorage.removeItem('fliccs-room');
         setSessionId(null);
         setSessionPassword('');
         setParticipants([]);
@@ -41,12 +42,16 @@ function MainApp() {
     useEffect(() => {
         if (!socket) return;
 
-        const handleSessionCreated = ({ sessionId: newSessionId }) => {
+        const handleSessionCreated = ({ sessionId: newSessionId, resumeToken, password }) => {
+            if (resumeToken) sessionStorage.setItem('fliccs-room', JSON.stringify({ sessionId: newSessionId, resumeToken }));
+            setSessionPassword(password || '');
             setSessionId(newSessionId);
             setAppError(null);
         };
 
-        const handleSessionJoined = ({ sessionId: joinedSessionId }) => {
+        const handleSessionJoined = ({ sessionId: joinedSessionId, resumeToken, password }) => {
+            if (resumeToken) sessionStorage.setItem('fliccs-room', JSON.stringify({ sessionId: joinedSessionId, resumeToken }));
+            setSessionPassword(password || '');
             setSessionId(joinedSessionId);
             setAppError(null);
         };
@@ -67,6 +72,19 @@ function MainApp() {
             setParticipants(participants);
         };
 
+        const resumeRoom = () => {
+            const saved = sessionStorage.getItem('fliccs-room');
+            if (!saved) return;
+            try { socket.emit('session:resume', JSON.parse(saved)); }
+            catch { sessionStorage.removeItem('fliccs-room'); }
+        };
+        const resumeFailed = () => {
+            resetSessionState();
+            setAppError('This room could not be restored. Please join again.');
+        };
+        socket.on('connect', resumeRoom);
+        socket.on('session:resume_failed', resumeFailed);
+        if (socket.connected) resumeRoom();
         socket.on('session:created', handleSessionCreated);
         socket.on('session:joined', handleSessionJoined);
         socket.on('session:error', handleSessionError);
@@ -74,6 +92,8 @@ function MainApp() {
         socket.on('session:participants', handleParticipantUpdate);
 
         return () => {
+            socket.off('connect', resumeRoom);
+            socket.off('session:resume_failed', resumeFailed);
             socket.off('session:created', handleSessionCreated);
             socket.off('session:joined', handleSessionJoined);
             socket.off('session:error', handleSessionError);

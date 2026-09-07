@@ -78,16 +78,6 @@ function StreamRoom({ socket, sessionId, sessionPassword, participants: particip
         };
     }, [socket]);
 
-    useEffect(() => {
-        const handleUnload = () => {
-            if (socket?.connected) {
-                socket.emit('session:leave');
-            }
-        };
-        window.addEventListener('beforeunload', handleUnload);
-        return () => window.removeEventListener('beforeunload', handleUnload);
-    }, [socket]);
-
     // --- Fullscreen ---
     useEffect(() => {
         const onFsChange = () => {

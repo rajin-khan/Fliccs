@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { generateSessionId } from '../utils/id.js';
 
 /**
@@ -28,12 +29,14 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
         ],
       };
 
+      const resumeToken = randomUUID();
+      newSession.resumes = new Map([[resumeToken, { user: newSession.users[0] }]]);
       sessions.set(sessionId, newSession);
       socketToSessionMap.set(socket.id, sessionId);
       socket.join(sessionId);
 
       console.log(`[session] Created session ${sessionId} (Mode: ${newSession.mode}) by ${name} (${socket.id})`);
-      socket.emit('session:created', { sessionId, mode: newSession.mode });
+      socket.emit('session:created', { sessionId, mode: newSession.mode, resumeToken, password: newSession.password });
       // Emit participants *after* emitting created, so client knows session ID first
       io.to(sessionId).emit('session:participants', { participants: newSession.users, mode: newSession.mode });
     } catch (error) {
@@ -80,6 +83,8 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
         id: socket.id,
         nickname: name,
       };
+      const resumeToken = randomUUID();
+      session.resumes.set(resumeToken, { user: newUser });
       session.users.push(newUser);
 
       socketToSessionMap.set(socket.id, sessionId);
@@ -87,7 +92,7 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
       sessions.set(sessionId, session); // Save the updated session
 
       console.log(`[session] ${name} (${socket.id}) joined session ${sessionId} (Mode: ${session.mode})`);
-      socket.emit('session:joined', { sessionId, mode: session.mode });
+      socket.emit('session:joined', { sessionId, mode: session.mode, resumeToken, password: session.password });
 
       // Notify others about the new user
       socket.to(sessionId).emit('user:joined', { userId: newUser.id, nickname: newUser.nickname }); // Use socket.to to not send to self
@@ -159,6 +164,9 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
     const userNickname = leavingUser?.nickname || socket.id;
     const wasHost = session.host === socket.id;
 
+    for (const [token, entry] of session.resumes) {
+      if (entry.user.id === socket.id) { clearTimeout(entry.timer); session.resumes.delete(token); }
+    }
     // Remove user
     session.users = session.users.filter(u => u.id !== socket.id);
     socketToSessionMap.delete(socket.id);
@@ -213,39 +221,50 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
     const userNickname = disconnectedUser?.nickname || socket.id;
     const wasHost = session.host === socket.id;
 
-    // Remove user from session data
-    session.users = session.users.filter(u => u.id !== socket.id);
     socketToSessionMap.delete(socket.id);
-    // socket.leave(sessionId) is implicitly handled by disconnect
+    const resume = [...session.resumes.values()].find(entry => entry.user.id === socket.id);
+    if (!resume) return;
+    // Keep the seat and host role for a minute while the browser reconnects.
+    resume.timer = setTimeout(() => {
+      if (sessions.get(sessionId) !== session) return;
+      for (const [token, entry] of session.resumes) {
+        if (entry === resume) session.resumes.delete(token);
+      }
+      session.users = session.users.filter(user => user !== resume.user);
+      if (wasHost) {
+        sessions.delete(sessionId);
+        io.to(sessionId).emit('session:host_disconnected', { message: 'Host did not reconnect.' });
+        io.socketsLeave(sessionId);
+      } else {
+        io.to(sessionId).emit('user:left', { userId: socket.id });
+        io.to(sessionId).emit('session:participants', { participants: session.users, mode: session.mode });
+      }
+    }, 60000);
+    resume.timer.unref?.();
 
-    console.log(`[session] ${userNickname} (${socket.id}) disconnected from session ${sessionId}. Reason: ${reason}`);
-
-    // If host disconnected, end the session for everyone
-    if (wasHost) {
-      console.log(`[session] Host (${socket.id}) disconnected. Ending session ${sessionId}`);
-      sessions.delete(sessionId);
-      // Notify remaining users the session ended because host disconnected
-      io.to(sessionId).emit('session:host_disconnected', { message: 'Host disconnected.' });
-      // Force remaining sockets in the room to leave the room server-side
-      io.socketsLeave(sessionId);
-      return;
-    }
-
-    // If the last user disconnected, clean up the session
-    if (session.users.length === 0) {
-      console.log(`[session] Last user disconnected from session ${sessionId}. Cleaning up.`);
-      sessions.delete(sessionId);
-      return;
-    }
-
-    // Otherwise, update the remaining users
-    sessions.set(sessionId, session); // Save the state without the disconnected user
-    // Notify remaining users about the departure
-    io.to(sessionId).emit('user:left', { userId: socket.id });
-    // Send updated participant list and current mode
-    io.to(sessionId).emit('session:participants', { participants: session.users, mode: session.mode });
   });
 
+
+  socket.on('session:resume', ({ sessionId, resumeToken } = {}) => {
+    const session = sessions.get(sessionId);
+    const entry = session?.resumes?.get(resumeToken);
+    if (!entry) {
+      socket.emit('session:resume_failed');
+      return;
+    }
+    const oldId = entry.user.id;
+    if (oldId !== socket.id && socketToSessionMap.has(oldId)) {
+      socket.emit('session:resume_failed');
+      return;
+    }
+    clearTimeout(entry.timer);
+    entry.user.id = socket.id;
+    if (session.host === oldId) session.host = socket.id;
+    socketToSessionMap.set(socket.id, sessionId);
+    socket.join(sessionId);
+    socket.emit('session:joined', { sessionId, mode: session.mode, resumeToken, password: session.password });
+    io.to(sessionId).emit('session:participants', { participants: session.users, mode: session.mode });
+  });
 
   // --- WEBRTC SIGNALING HANDLERS ---
 

@@ -181,19 +181,25 @@ function VideoPlayer({
 
     useEffect(() => {
         if (!isHost) return;
-        let startStreamTimeoutId = null;
+        let retryId;
+        const startWhenReady = () => {
+            if (videoElementRef.current?.readyState >= 2) startStreaming();
+        };
         if (sessionMode === 'stream' && isPlayerReady && localVideoURL && videoElementRef.current && !isStreamingActive) {
-            startStreamTimeoutId = setTimeout(() => { startStreaming(); }, 200);
+            startWhenReady();
+            retryId = setInterval(startWhenReady, 1000);
         } else if (sessionMode === 'sync' && isStreamingActive) {
             stopStreaming();
         }
-        return () => { if (startStreamTimeoutId) { clearTimeout(startStreamTimeoutId); } }
+        return () => clearInterval(retryId);
     }, [sessionMode, isHost, isPlayerReady, localVideoURL, startStreaming, stopStreaming, isStreamingActive]);
 
     const handleFileChange = useCallback(async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        stopStreaming();
+        videoElementRef.current = null;
         // Reset all relevant states
         setLocalVideoURL(null);
         setIsPlayerReady(false);
@@ -224,7 +230,7 @@ function VideoPlayer({
                 });
             }
         }, 50);
-    }, [socket, sessionId, sessionMode, isHost]);
+    }, [socket, sessionId, sessionMode, isHost, stopStreaming]);
 
     const handlePlayerReady = useCallback((playerInstance) => {
         setIsPlayerReady(true);

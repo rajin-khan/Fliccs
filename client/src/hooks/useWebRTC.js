@@ -197,6 +197,7 @@ function useWebRTC({
         if (event.streams && event.streams[0]) {
           if (remoteStreamRef.current?.id !== event.streams[0].id) {
             console.log(`[WebRTC Guest] Setting remote stream from ${peerId} (Stream ID: ${event.streams[0].id})`);
+            remoteStreamRef.current = event.streams[0];
             setRemoteStream(event.streams[0]);
           }
         } else {
@@ -298,6 +299,8 @@ function useWebRTC({
       return;
     }
 
+    const current = peerConnections.current.get(guestId);
+    if (current && Date.now() - current.createdAt < NEGOTIATION_GRACE_MS) return;
     const pc = createPeerConnection(guestId);
     if (!pc) return;
 
@@ -341,7 +344,7 @@ function useWebRTC({
       const tracks = stream.getTracks();
       console.log(`[WebRTC Host] captureStream OK. Tracks: ${tracks.map(t => t.kind).join(', ') || 'none'}`);
       if (tracks.length === 0) {
-        throw new Error('captureStream() returned 0 tracks. Ensure the video is loaded and playing.');
+        return;
       }
       stopLocalStream();
       localStreamRef.current = stream;
@@ -492,6 +495,13 @@ function useWebRTC({
       }
     });
   }, [participants, isHost, isStreamingActive, selfId, socket, hostConnectToGuest, closePeerConnection]);
+
+  useEffect(() => {
+    if (isHost) return;
+    for (const peerId of peerConnections.current.keys()) {
+      if (!participants.some(participant => participant.id === peerId)) closePeerConnection(peerId);
+    }
+  }, [participants, isHost, closePeerConnection]);
 
   // --- Guest: if every track of the remote stream ends (host video ended/reloaded),
   // drop the stream so the self-healing loop below can request a fresh offer. ---

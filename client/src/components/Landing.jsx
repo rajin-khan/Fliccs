@@ -65,28 +65,8 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
 
             {/* Header */}
             <header className="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-50">
-                <div className="flex items-center gap-3">
-                    <BrandLogo size="md" />
-                    <div className="flex flex-col">
-                        <span className="text-white/50 text-[10px] tracking-[0.2em] font-light leading-none">V3.0</span>
-                    </div>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                    <div className="text-[10px] font-mono text-white/40 flex items-center gap-2">
-                        {isConnected ? (
-                            <>
-                                <span className="text-emerald-500/80">● ONLINE</span>
-                                <span className="hidden md:inline text-white/10">|</span>
-                                <span className="hidden md:inline">ID: {socket?.id?.slice(0, 4)}...</span>
-                            </>
-                        ) : (
-                            <span className="text-red-500/80">● OFFLINE</span>
-                        )}
-                    </div>
-                    {/* Server Status Timer integrated into Header */}
-                    <div className="hidden md:block opacity-60 scale-90 origin-right">
-                    </div>
-                </div>
+                <BrandLogo size="md" />
+                <span className="text-white/50 text-[10px] tracking-[0.2em] font-light leading-none" aria-label="Version 3.0">V3.0</span>
             </header>
 
             <a href="#landing-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-white focus:text-black focus:px-4 focus:py-2">Skip to content</a>

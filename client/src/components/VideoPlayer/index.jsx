@@ -5,6 +5,7 @@ import useVideoSync from './useVideoSync';
 import useWebRTC from '../../hooks/useWebRTC';
 import { calculateFileHash } from '../../utils/fileHash.js';
 import PlayerControls from './PlayerControls';
+import { bindGuestPlayback } from './guestPlayback.js';
 
 function VideoPlayer({
     socket,
@@ -22,6 +23,8 @@ function VideoPlayer({
     const playerRef = useRef(null);
     const videoElementRef = useRef(null);
     const guestVideoRef = useRef(null);
+    const guestPlaybackRef = useRef(null);
+    const [guestPlaybackStatus, setGuestPlaybackStatus] = useState('loading');
     const seekingRef = useRef(false);
     const isUserControllingRef = useRef(false);
 
@@ -256,25 +259,14 @@ function VideoPlayer({
         const el = guestVideoRef.current;
         if (!el || !remoteStream || isHost) return;
 
-        setIsPlayerReady(false);
-        el.srcObject = remoteStream;
-        const tryPlay = () => {
-            el.play().catch((err) => {
-                console.warn('[VideoPlayer] Guest autoplay failed:', err?.message || err);
-            });
-        };
-        tryPlay();
-
-        const onPlaying = () => setIsPlayerReady(true);
-        el.addEventListener('playing', onPlaying);
-
-
+        const playback = bindGuestPlayback(el, remoteStream, status => {
+            setGuestPlaybackStatus(status);
+            setIsPlayerReady(status === 'playing');
+        });
+        guestPlaybackRef.current = playback;
         return () => {
-            el.removeEventListener('playing', onPlaying);
-
-            if (el.srcObject === remoteStream) {
-                el.srcObject = null;
-            }
+            playback.dispose();
+            if (guestPlaybackRef.current === playback) guestPlaybackRef.current = null;
         };
     }, [remoteStream, isHost]);
 
@@ -420,7 +412,19 @@ function VideoPlayer({
                             className="w-full h-full object-contain bg-black"
                         />
 
-                        {loadingOverlay}
+                        {guestPlaybackStatus !== 'playing' && !webRTCError && (
+                            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-black/70 p-6 text-center">
+                                <p role="status" className="text-sm text-white/80">
+                                    {guestPlaybackStatus === 'blocked' ? 'Your browser needs a tap to start the video.' :
+                                     guestPlaybackStatus === 'error' ? 'The video could not play. Try again or open this invite in Safari or Chrome.' :
+                                     guestPlaybackStatus === 'waiting' ? 'Still waiting for video from the host.' : 'Connecting video...'}
+                                </p>
+                                <button type="button" onClick={() => guestPlaybackRef.current?.play()}
+                                    className="min-h-12 rounded-full bg-brand-primary px-6 py-3 text-white font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
+                                    {guestPlaybackStatus === 'blocked' ? 'Tap to play' : 'Play video'}
+                                </button>
+                            </div>
+                        )}
 
                         <div
                             className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 cursor-none'}`}

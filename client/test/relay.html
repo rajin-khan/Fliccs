@@ -1,4 +1,21 @@
 <!doctype html><html><head><title>Fliccs relay QA</title></head><body><div id="root"></div><button id="drop" style="position:fixed;top:0;left:0;z-index:99999">Drop test connections</button><pre id="qa" style="position:fixed;bottom:0;left:0;z-index:99999;background:white;color:black;font-size:12px;max-height:90px;overflow:auto"></pre><script type="module">
+// Simulate an embedded browser that refuses autoplay until a real click.
+if (new URLSearchParams(location.search).has('blockAutoplay')) {
+ const nativePlay = HTMLMediaElement.prototype.play;
+ const source = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'srcObject');
+ Object.defineProperty(HTMLMediaElement.prototype, 'srcObject', {
+  ...source,
+  set(value) { this.autoplay = false; source.set.call(this, value); },
+ });
+ let allowed = false;
+ document.addEventListener('click', event => {
+  if (event.target.closest('button')?.textContent.trim() === 'Tap to play') allowed = true;
+ }, true);
+ HTMLMediaElement.prototype.play = function() {
+  if (this.srcObject && !allowed) return Promise.reject(new DOMException('Tap required', 'NotAllowedError'));
+  return nativePlay.call(this);
+ };
+}
 const NativePeer = window.RTCPeerConnection;
 const peers=[];
 window.RTCPeerConnection=class extends NativePeer { constructor(config) { super({...config,iceTransportPolicy:'relay'});peers.push(this); } };

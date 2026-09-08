@@ -1,7 +1,7 @@
 import Metadata from './seo/Metadata';
 import PageLayout from './components/Layout/PageLayout';
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import StreamRoom from './components/StreamRoom.jsx';
 import Landing from './components/Landing.jsx';
 import { useSocket } from './hooks/useSocket';
@@ -14,6 +14,7 @@ import PrivacyPage from './pages/PrivacyPage.jsx';
 import RefundPage from './pages/RefundPage.jsx';
 
 function MainApp() {
+    const navigate = useNavigate();
     const { socket, isConnected } = useSocket();
     const [sessionId, setSessionId] = useState(null);
     const [sessionPassword, setSessionPassword] = useState('');
@@ -162,14 +163,14 @@ function MainApp() {
                         const url = new URL(window.location);
                         url.searchParams.delete('join');
                         url.searchParams.delete('pass');
-                        window.history.replaceState({}, '', url);
+                        navigate(url.pathname + url.search + url.hash, { replace: true });
                     }}
                     onCancel={() => {
                         setAutoJoinParams(null);
                         const url = new URL(window.location);
                         url.searchParams.delete('join');
                         url.searchParams.delete('pass');
-                        window.history.replaceState({}, '', url);
+                        navigate(url.pathname + url.search + url.hash, { replace: true });
                     }}
                 />
             )}

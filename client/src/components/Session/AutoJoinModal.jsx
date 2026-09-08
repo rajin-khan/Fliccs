@@ -40,11 +40,6 @@ function AutoJoinModal({ sessionId, password, socket, isConnected, onJoin, onCan
     };
 
     const handleCancel = () => {
-        // Clear URL params
-        const url = new URL(window.location);
-        url.searchParams.delete('join');
-        url.searchParams.delete('pass');
-        window.history.replaceState({}, '', url);
         if (onCancel) onCancel();
     };
 

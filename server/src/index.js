@@ -3,10 +3,11 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { readFile } from 'node:fs/promises';
 
 import rateLimit from 'express-rate-limit';
 import slowDown from 'express-slow-down';
-import { pages } from '../../client/src/seo/pages.js';
+import { pages, isInvite, inviteUrl } from '../../client/src/seo/pages.js';
 
 import { registerSessionHandlers } from './handlers/session.js';
 import { registerSyncHandlers } from './handlers/sync.js';
@@ -64,7 +65,7 @@ app.get('/health', (req, res) => {
 });
 
 // Keep private invite URLs out of search results without blocking crawler access
-// to the noindex header. Canonicals never include room IDs or passwords.
+// to the noindex header. Public-page canonicals exclude query parameters.
 app.use((req, res, next) => {
   if ('join' in req.query || 'pass' in req.query) res.set('X-Robots-Tag', 'noindex, nofollow');
   if (process.env.NODE_ENV === 'production' && ['www.fliccs.com', 'fliccs.up.railway.app'].includes(req.hostname)) {
@@ -81,7 +82,15 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.static(rootDir, { index: false, redirect: false }));
-app.use((req, res) => {
+app.use(async (req, res) => {
+  const search = req.originalUrl.slice(req.path.length);
+  if ((req.method === 'GET' || req.method === 'HEAD') && isInvite(req.path, search)) {
+    const html = await readFile(path.join(rootDir, '.templates/invite.html'), 'utf8');
+    const url = inviteUrl(search).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
+    // Preserve the shared URL so social clients don't replace it with the homepage.
+    // The credential remains only in the URL, never in visible preview content.
+    return res.set('Cache-Control', 'private, no-store').type('html').send(html.replaceAll('__INVITE_URL__', url));
+  }
   if ((req.method === 'GET' || req.method === 'HEAD') && Object.hasOwn(pages, req.path)) {
     return res.sendFile(path.join(rootDir, req.path === '/' ? 'index.html' : `${req.path}/index.html`));
   }

@@ -36,6 +36,22 @@ test('public SEO, canonical redirects, private invites and real 404s', async () 
       assert.ok(JSON.parse(html.match(/id="structured-data"[^>]*>(.*?)<\/script>/s)[1])['@graph']);
     }
     assert.match((await get('/?join=example&pass=example')).headers.get('x-robots-tag'), /noindex/);
+    for (const agent of ['facebookexternalhit/1.1', 'Twitterbot/1.0', 'Discordbot/2.0']) {
+      const response = await get('/?join=ABC123&pass=a%26b%22%3Cscript%3E', { headers: { 'User-Agent': agent } });
+      const html = await response.text();
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('cache-control'), 'private, no-store');
+      assert.match(html, /<title>You're invited to watch together \| Fliccs<\/title>/);
+      assert.match(html, /property="og:image" content="https:\/\/fliccs.com\/og\/invite.png"/);
+      assert.match(html, /name="twitter:image" content="https:\/\/fliccs.com\/og\/invite.png"/);
+      assert.match(html, /property="og:url" content="https:\/\/fliccs.com\/\?join=ABC123&amp;pass=a%26b%22%3Cscript%3E"/);
+      assert.match(html, /name="robots" content="noindex, nofollow"/);
+      assert.ok(!html.includes('__INVITE_URL__'));
+      assert.ok(!html.includes('a&b"<script>'));
+    }
+    const inviteImage = Buffer.from(await (await get('/og/invite.png')).arrayBuffer());
+    assert.equal(inviteImage.readUInt32BE(16), 1200);
+    assert.equal(inviteImage.readUInt32BE(20), 630);
     assert.equal((await get('/does-not-exist')).status, 404);
     for (const [path, expected] of [['/pricing/', '/pricing'], ['/index.html', '/'], ['/privacy/index.html', '/privacy']]) {
       const response = await get(path, { redirect: 'manual' });

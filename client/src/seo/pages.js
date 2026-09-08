@@ -16,3 +16,13 @@ export function structuredData(pathname) {
     ...(pathname === '/' ? [{ '@type': 'WebApplication', name: 'Fliccs', url: `${origin}/`, applicationCategory: 'MultimediaApplication', operatingSystem: 'Web browser', description: page.description, image: `${origin}/og/fliccs.png` }] : []),
   ] };
 }
+
+export const invite = { title: "You're invited to watch together | Fliccs", description: 'Join a Fliccs watch party. Sync or stream local videos with friends, with live chat and no account needed.' };
+export function isInvite(path, search) { return path === '/' && Boolean(new URLSearchParams(search).get('join')); }
+export function inviteUrl(search) {
+  const params = new URLSearchParams(search);
+  const url = new URL('/', origin);
+  url.searchParams.set('join', params.get('join'));
+  if (params.has('pass')) url.searchParams.set('pass', params.get('pass'));
+  return url.href;
+}

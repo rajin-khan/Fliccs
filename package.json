@@ -1,19 +1,17 @@
 {
     "name": "fliccs",
     "private": true,
-    "workspaces": [
-        "client",
-        "server"
-    ],
     "scripts": {
-        "build": "npm run build:client && npm run build:server",
-        "build:client": "cd client && npm run build",
-        "build:server": "cd server && npm run build",
-        "start": "cd server && npm start"
+        "build": "pnpm run build:client && pnpm run build:server",
+        "build:client": "pnpm --dir client run build",
+        "build:server": "pnpm --dir server run build",
+        "start": "pnpm --dir server start",
+        "test:seo": "node --test server/test/seo.test.js"
     },
     "dependencies": {
         "express-rate-limit": "^7.5.0",
         "express-slow-down": "^2.0.3",
         "helmet": "^8.1.0"
-    }
+    },
+    "packageManager": "pnpm@10.28.2"
 }

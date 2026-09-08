@@ -107,8 +107,8 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
                         </div>
 
                         <p className="text-lg md:text-xl text-gray-400 font-light max-w-md mx-auto lg:mx-0 leading-relaxed">
-                            The best way to watch movies with friends. <br />
-                            <span className="text-brand-primary font-normal">No uploads. No accounts. Total privacy.</span>
+                            Watch local videos together with friends. Sync playback or stream from one host. <br />
+                            <span className="text-brand-primary font-normal">Live chat. Private rooms. No account needed.</span>
                         </p>
 
                         {/* Mode Switcher - Pill Style */}

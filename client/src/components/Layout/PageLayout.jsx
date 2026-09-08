@@ -1,9 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
 import BrandLogo from '../BrandLogo';
 
 export default function PageLayout({ children, title, description, surface = true }) {
-    const navigate = useNavigate();
 
     return (
         <div className="min-h-[100dvh] bg-[#05050a] w-full flex flex-col font-barlow overflow-x-hidden relative selection:bg-brand-primary selection:text-white">
@@ -22,9 +21,8 @@ export default function PageLayout({ children, title, description, surface = tru
 
             <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#05050a]/85 backdrop-blur-xl supports-[backdrop-filter]:bg-[#05050a]/70">
                 <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
-                    <button
-                        type="button"
-                        onClick={() => navigate('/')}
+                    <Link
+                        to="/"
                         className="group inline-flex min-h-10 items-center gap-3 rounded-full pr-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
                         aria-label="Back to Fliccs home"
                     >
@@ -35,7 +33,7 @@ export default function PageLayout({ children, title, description, surface = tru
                         <span className="hidden text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35 transition-colors group-hover:text-white/70 sm:inline">
                             Back home
                         </span>
-                    </button>
+                    </Link>
                     <span className="max-w-[45vw] truncate text-[10px] font-semibold uppercase tracking-[0.2em] text-white/25">
                         {title}
                     </span>
@@ -70,9 +68,9 @@ export default function PageLayout({ children, title, description, surface = tru
             <footer className="relative z-10 border-t border-white/[0.05]">
                 <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-6 text-[9px] font-medium uppercase tracking-[0.18em] text-white/25 sm:px-6 sm:text-[10px] lg:px-8">
                     <span>Fliccs &bull; 2026</span>
-                    <button type="button" onClick={() => navigate('/')} className="transition-colors hover:text-white/60">
+                    <Link to="/" className="transition-colors hover:text-white/60">
                         Return home
-                    </button>
+                    </Link>
                 </div>
             </footer>
         </div>

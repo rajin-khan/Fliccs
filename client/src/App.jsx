@@ -1,3 +1,5 @@
+import Metadata from './seo/Metadata';
+import PageLayout from './components/Layout/PageLayout';
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import StreamRoom from './components/StreamRoom.jsx';
@@ -175,18 +177,21 @@ function MainApp() {
     );
 }
 
-function App() {
+export function AppRoutes() {
     return (
-        <BrowserRouter>
+        <>
+            <Metadata />
             <Routes>
                 <Route path="/" element={<MainApp />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/terms-and-conditions" element={<TermsPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/refund" element={<RefundPage />} />
+                <Route path="*" element={<PageLayout title="Page not found" description="This page does not exist."><a href="/">Start or join a watch party</a></PageLayout>} />
             </Routes>
-        </BrowserRouter>
+        </>
     );
 }
 
+function App() { return <BrowserRouter><AppRoutes /></BrowserRouter>; }
 export default App;

@@ -272,7 +272,7 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
    * Relay WebRTC Offer
    * Sent from the initiating peer (usually host in stream mode) to a target peer.
    */
-  socket.on('webrtc:offer', ({ targetUserId, offer }) => {
+  socket.on('webrtc:offer', ({ targetUserId, offer, negotiationId } = {}) => {
     const sessionId = socketToSessionMap.get(socket.id);
     if (!sessionId) {
        console.warn(`[webrtc:offer] Received from socket ${socket.id} not in a session.`);
@@ -294,7 +294,8 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
     // Using socket.to(targetUserId) ensures it only goes to that specific socket
     socket.to(targetUserId).emit('webrtc:offer', {
       fromUserId: socket.id, // Let the recipient know who sent the offer
-      offer: offer
+      offer: offer,
+      negotiationId,
     });
   });
 
@@ -302,7 +303,7 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
    * Relay WebRTC Answer
    * Sent from the target peer back to the initiating peer.
    */
-  socket.on('webrtc:answer', ({ targetUserId, answer }) => {
+  socket.on('webrtc:answer', ({ targetUserId, answer, negotiationId } = {}) => {
     const sessionId = socketToSessionMap.get(socket.id);
      if (!sessionId) {
        console.warn(`[webrtc:answer] Received from socket ${socket.id} not in a session.`);
@@ -323,7 +324,8 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
     console.log(`[webrtc] Relaying answer from ${socket.id} to ${targetUserId} in session ${sessionId}`);
     socket.to(targetUserId).emit('webrtc:answer', {
       fromUserId: socket.id, // Let the original sender know who answered
-      answer: answer
+      answer: answer,
+      negotiationId,
     });
   });
 
@@ -331,7 +333,7 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
    * Relay ICE Candidate
    * Exchanged between peers to help establish the direct connection.
    */
-  socket.on('webrtc:ice-candidate', ({ targetUserId, candidate }) => {
+  socket.on('webrtc:ice-candidate', ({ targetUserId, candidate, negotiationId } = {}) => {
     const sessionId = socketToSessionMap.get(socket.id);
     if (!sessionId) {
        return;
@@ -348,7 +350,8 @@ export function registerSessionHandlers(io, socket, sessions, socketToSessionMap
     // Relay ICE candidate ONLY to the target peer
     socket.to(targetUserId).emit('webrtc:ice-candidate', {
       fromUserId: socket.id, // Let the recipient know whose candidate this is
-      candidate: candidate
+      candidate: candidate,
+      negotiationId,
     });
   });
 

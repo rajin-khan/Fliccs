@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { FaRocket, FaUsers, FaShieldAlt } from 'react-icons/fa';
 import CreateSession from './Session/Create';
 import JoinSession from './Session/Join';
-import ServerStatusTimer from './Session/ServerStatusTimer';
 import BrandLogo from './BrandLogo';
 import visionImg from '../assets/promo/vision.png';
 
@@ -86,7 +85,6 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
                     </div>
                     {/* Server Status Timer integrated into Header */}
                     <div className="hidden md:block opacity-60 scale-90 origin-right">
-                        <ServerStatusTimer />
                     </div>
                 </div>
             </header>

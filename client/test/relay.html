@@ -1,0 +1,16 @@
+<!doctype html><html><head><title>Fliccs relay QA</title></head><body><div id="root"></div><button id="drop" style="position:fixed;top:0;left:0;z-index:99999">Drop test connections</button><pre id="qa" style="position:fixed;bottom:0;left:0;z-index:99999;background:white;color:black;font-size:12px;max-height:90px;overflow:auto"></pre><script type="module">
+const NativePeer = window.RTCPeerConnection;
+const peers=[];
+window.RTCPeerConnection=class extends NativePeer { constructor(config) { super({...config,iceTransportPolicy:'relay'});peers.push(this); } };
+document.querySelector('#drop').onclick=()=>peers.forEach(pc=>pc.close());
+setInterval(async()=>{
+ const result=[];
+ for (const pc of peers.filter(p=>p.signalingState!=='closed')) {
+  const stats=await pc.getStats();
+  result.push({ice:pc.iceConnectionState,media:[...stats.values()].filter(s=>s.type==='inbound-rtp').map(s=>({kind:s.kind,bytes:s.bytesReceived,frames:s.framesDecoded})),relay:[...stats.values()].filter(s=>s.type==='local-candidate').map(s=>s.candidateType)});
+ }
+ document.querySelector('#qa').textContent=JSON.stringify(result);
+},2000);
+history.replaceState(null, '', '/');
+await import('/src/main.jsx');
+</script></body></html>

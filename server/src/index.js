@@ -1,4 +1,5 @@
 import express from 'express';
+import { createIceProvider, registerIceHandler } from './turn.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
@@ -101,7 +102,9 @@ app.use(async (req, res) => {
 const sessions = new Map();
 const socketToSessionMap = new Map();
 
+const getIce = createIceProvider();
 io.on('connection', (socket) => {
+  registerIceHandler(socket, sessions, socketToSessionMap, getIce);
   console.log(`Client connected: ${socket.id}`);
   registerSessionHandlers(io, socket, sessions, socketToSessionMap);
   registerSyncHandlers(io, socket, sessions);

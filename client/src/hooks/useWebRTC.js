@@ -3,47 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 
-export const turnCredentials = {
-  lastResetTimestamp: '2026-09-09 00:00', // <--- UPDATE THIS (e.g., "2024-08-02 15:30")
-  username: "33c799d67446a4f887be8c7039db87e75b3f3ab7ae9a18db66817baa2d17f7e8", // <--- UPDATE THIS
-  credential: "cZ0FT8HbMEBzesvR9NWOxcVxcWrLQYV9rjqQTX+PPaw=", // <--- UPDATE THIS
-};
-
-// Split TURN servers into separate entries for better compatibility
-const ICE_SERVERS = [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-    { urls: "stun:global.stun.twilio.com:3478" },
-    // TURN UDP - fastest if available
-    {
-      urls: "turn:global.turn.twilio.com:3478?transport=udp",
-      username: turnCredentials.username,
-      credential: turnCredentials.credential,
-    },
-    // TURN TCP - more reliable through firewalls
-    {
-      urls: "turn:global.turn.twilio.com:3478?transport=tcp",
-      username: turnCredentials.username,
-      credential: turnCredentials.credential,
-    },
-    // TURN TLS on 443 - best for restrictive networks
-    {
-      urls: "turn:global.turn.twilio.com:443?transport=tcp",
-      username: turnCredentials.username,
-      credential: turnCredentials.credential,
-    },
-    // TURNS (TURN over TLS) for maximum compatibility
-    {
-      urls: "turns:global.turn.twilio.com:443?transport=tcp",
-      username: turnCredentials.username,
-      credential: turnCredentials.credential,
-    },
-];
-
 // How often a stream-less guest nudges the host for a fresh offer.
 const GUEST_REQUEST_INTERVAL_MS = 5000;
 // Give an in-flight negotiation this long before allowing a re-request to replace it.
-const NEGOTIATION_GRACE_MS = 12000;
+const NEGOTIATION_GRACE_MS = 45000;
 
 /**
  * Custom Hook to manage WebRTC streaming logic.
@@ -77,9 +40,26 @@ function useWebRTC({
 }) {
   // peerId -> { pc: RTCPeerConnection, createdAt: number }
   const peerConnections = useRef(new Map());
-  // peerId -> RTCIceCandidateInit[] queued before the remote description was set
+  // Candidates are tagged with the negotiation that produced them.
   const pendingCandidates = useRef(new Map());
   const localStreamRef = useRef(null);
+  const iceConfig = useRef(null);
+  const configRequest = useRef(null);
+  const pendingConnections = useRef(new Map());
+
+  const getIceConfig = useCallback(async () => {
+    if (iceConfig.current?.expiresAt > Date.now() + 60_000) return iceConfig.current;
+    if (!configRequest.current) {
+      configRequest.current = new Promise((resolve, reject) => {
+        socketRef.current.timeout(12_000).emit('webrtc:config', (error, config) => {
+          if (error || config?.error || !config?.iceServers?.length) {
+            reject(new Error(config?.error || 'Could not contact the streaming relay. Please try again.'));
+          } else { iceConfig.current = config; resolve(config); }
+        });
+      }).finally(() => { configRequest.current = null; });
+    }
+    return configRequest.current;
+  }, []);
 
   const [remoteStream, setRemoteStream] = useState(null);
   const [isStreamingActive, setIsStreamingActive] = useState(false);
@@ -114,14 +94,15 @@ function useWebRTC({
 
     if (pc && pc.remoteDescription && candidates.length > 0) {
       console.log(`[WebRTC] Processing ${candidates.length} queued ICE candidates for ${peerId}`);
-      for (const candidate of candidates) {
+      pendingCandidates.current.delete(peerId);
+      for (const { candidate, negotiationId } of candidates) {
+        if (negotiationId && negotiationId !== entry.negotiationId) continue;
         try {
           await pc.addIceCandidate(new RTCIceCandidate(candidate));
         } catch (error) {
           console.warn(`[WebRTC] Error adding queued candidate for ${peerId}:`, error);
         }
       }
-      pendingCandidates.current.delete(peerId);
     }
   }, []);
 
@@ -131,6 +112,7 @@ function useWebRTC({
    * so the UI doesn't flash back to the loading state.
    */
   const closePeerConnection = useCallback((peerId, { keepRemoteStream = false } = {}) => {
+    pendingConnections.current.delete(peerId);
     const entry = peerConnections.current.get(peerId);
     if (!entry) {
       pendingCandidates.current.delete(peerId);
@@ -139,6 +121,7 @@ function useWebRTC({
     const { pc } = entry;
     console.log(`[WebRTC] Closing connection to peer: ${peerId} (State: ${pc.connectionState || pc.iceConnectionState})`);
     pc.onicecandidate = null;
+    pc.onicecandidateerror = null;
     pc.oniceconnectionstatechange = null;
     pc.onicegatheringstatechange = null;
     pc.onsignalingstatechange = null;
@@ -156,6 +139,7 @@ function useWebRTC({
 
     if (!isHostRef.current && !keepRemoteStream && remoteStreamRef.current) {
       console.log(`[WebRTC Guest] Connection to host ${peerId} closed. Clearing remote stream.`);
+      remoteStreamRef.current = null;
       setRemoteStream(null);
     }
   }, []);
@@ -165,8 +149,10 @@ function useWebRTC({
     if (peerIds.length) console.log('[WebRTC] Closing all connections:', peerIds);
     peerIds.forEach((peerId) => closePeerConnection(peerId, { keepRemoteStream }));
     peerConnections.current.clear();
+    pendingConnections.current.clear();
     pendingCandidates.current.clear();
     if (!isHostRef.current && !keepRemoteStream && remoteStreamRef.current) {
+      remoteStreamRef.current = null;
       setRemoteStream(null);
     }
   }, [closePeerConnection]);
@@ -179,31 +165,48 @@ function useWebRTC({
     }
   }, []);
 
-  const createPeerConnection = useCallback((peerId, { keepRemoteStream = false } = {}) => {
+  const createPeerConnection = useCallback(async (peerId, { keepRemoteStream = false, negotiationId = crypto.randomUUID() } = {}) => {
+    const attempt = {};
+    pendingConnections.current.set(peerId, attempt);
+    let config;
+    try { config = await getIceConfig(); }
+    catch (error) {
+      if (pendingConnections.current.get(peerId) === attempt) {
+        pendingConnections.current.delete(peerId);
+        setWebRTCError(error.message);
+      }
+      return null;
+    }
+    if (pendingConnections.current.get(peerId) !== attempt) return null;
+    pendingConnections.current.delete(peerId);
+    const queued = pendingCandidates.current.get(peerId);
     if (peerConnections.current.has(peerId)) {
       console.log(`[WebRTC] Replacing existing connection for ${peerId}.`);
       closePeerConnection(peerId, { keepRemoteStream });
     }
 
+    if (queued) pendingCandidates.current.set(peerId, queued);
     console.log(`[WebRTC] Creating peer connection for: ${peerId}`);
     clearError();
 
     try {
-      const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+      const pc = new RTCPeerConnection({ iceServers: config.iceServers });
 
+      let inbound = null;
       pc.ontrack = (event) => {
         console.log(`[WebRTC] Track received from ${peerId}: Kind=${event.track.kind}, ReadyState=${event.track.readyState}`);
         if (isHostRef.current) return;
         if (event.streams && event.streams[0]) {
-          if (remoteStreamRef.current?.id !== event.streams[0].id) {
+          if (remoteStreamRef.current !== event.streams[0]) {
             console.log(`[WebRTC Guest] Setting remote stream from ${peerId} (Stream ID: ${event.streams[0].id})`);
             remoteStreamRef.current = event.streams[0];
             setRemoteStream(event.streams[0]);
           }
         } else {
           // Fallback: build a stream from bare tracks
-          const inbound = remoteStreamRef.current || new MediaStream();
+          inbound ||= new MediaStream();
           inbound.addTrack(event.track);
+          remoteStreamRef.current = inbound;
           setRemoteStream(inbound);
         }
       };
@@ -214,7 +217,7 @@ function useWebRTC({
           const c = event.candidate.candidate || '';
           const type = c.includes('relay') ? 'relay (TURN)' : c.includes('srflx') ? 'srflx (STUN)' : c.includes('host') ? 'host' : 'unknown';
           console.log(`[WebRTC] Sending ICE candidate to ${peerId}: type=${type}`);
-          sock.emit('webrtc:ice-candidate', { targetUserId: peerId, candidate: event.candidate });
+          sock.emit('webrtc:ice-candidate', { targetUserId: peerId, candidate: event.candidate, negotiationId });
         } else if (!event.candidate) {
           console.log(`[WebRTC] ICE gathering complete for ${peerId}.`);
         }
@@ -238,18 +241,21 @@ function useWebRTC({
         // 'disconnected' is often transient — let it recover or fail on its own.
       };
 
+      pc.onicecandidateerror = (event) => {
+        console.warn(`[WebRTC] ICE server error: ${event.url}, code=${event.errorCode}`);
+      };
       pc.onsignalingstatechange = () => {
         console.log(`[WebRTC] Signaling state for ${peerId}: ${pc.signalingState}`);
       };
 
-      peerConnections.current.set(peerId, { pc, createdAt: Date.now() });
+      peerConnections.current.set(peerId, { pc, negotiationId, createdAt: Date.now() });
       return pc;
     } catch (error) {
       console.error(`[WebRTC] Failed to create peer connection for ${peerId}:`, error);
       setWebRTCError(`Failed to initialize connection with peer ${peerId}.`);
       return null;
     }
-  }, [clearError, closePeerConnection]);
+  }, [clearError, closePeerConnection, getIceConfig]);
 
   /**
    * Host: make sure the captured local stream still has live tracks.
@@ -301,7 +307,8 @@ function useWebRTC({
 
     const current = peerConnections.current.get(guestId);
     if (current && Date.now() - current.createdAt < NEGOTIATION_GRACE_MS) return;
-    const pc = createPeerConnection(guestId);
+    if (pendingConnections.current.has(guestId)) return;
+    const pc = await createPeerConnection(guestId);
     if (!pc) return;
 
     try {
@@ -309,13 +316,17 @@ function useWebRTC({
         pc.addTrack(track, stream);
       });
       const offer = await pc.createOffer();
+      if (peerConnections.current.get(guestId)?.pc !== pc) return;
       await pc.setLocalDescription(offer);
+      if (peerConnections.current.get(guestId)?.pc !== pc) return;
       console.log(`[WebRTC Host] Sending offer to ${guestId}`);
       sock.emit('webrtc:offer', {
         targetUserId: guestId,
         offer: { sdp: offer.sdp, type: offer.type },
+        negotiationId: peerConnections.current.get(guestId)?.negotiationId,
       });
     } catch (error) {
+      if (peerConnections.current.get(guestId)?.pc !== pc) return;
       console.error(`[WebRTC Host] Error creating/sending offer to ${guestId}:`, error);
       setWebRTCError('Failed to initiate connection with a guest.');
       closePeerConnection(guestId);
@@ -381,7 +392,7 @@ function useWebRTC({
 
     // Guest: accept offers at ANY time, regardless of sessionMode. The mode update can
     // arrive after the host's offer (join-mid-stream race); dropping the offer bricked guests.
-    const handleOffer = async ({ fromUserId, offer }) => {
+    const handleOffer = async ({ fromUserId, offer, negotiationId }) => {
       if (isHostRef.current) return;
 
       console.log(`[WebRTC Guest] Received offer from host ${fromUserId} (mode='${sessionModeRef.current}')`);
@@ -389,20 +400,25 @@ function useWebRTC({
 
       // A new offer always supersedes whatever connection we had: the host creates a fresh
       // RTCPeerConnection before every offer, so our old one is orphaned regardless of its state.
-      const pc = createPeerConnection(fromUserId, { keepRemoteStream: true });
+      const pc = await createPeerConnection(fromUserId, { keepRemoteStream: true, negotiationId });
       if (!pc) return;
 
       try {
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        if (peerConnections.current.get(fromUserId)?.pc !== pc) return;
         await processPendingCandidates(fromUserId);
         const answer = await pc.createAnswer();
+        if (peerConnections.current.get(fromUserId)?.pc !== pc) return;
         await pc.setLocalDescription(answer);
+        if (peerConnections.current.get(fromUserId)?.pc !== pc) return;
         console.log(`[WebRTC Guest] Sending answer to host ${fromUserId}`);
         socket.emit('webrtc:answer', {
           targetUserId: fromUserId,
           answer: { sdp: answer.sdp, type: answer.type },
+          negotiationId,
         });
       } catch (error) {
+        if (peerConnections.current.get(fromUserId)?.pc !== pc) return;
         console.error('[WebRTC Guest] Error handling offer:', error);
         setWebRTCError('Failed to respond to host stream offer.');
         closePeerConnection(fromUserId);
@@ -410,10 +426,10 @@ function useWebRTC({
     };
 
     // Host: apply the guest's answer to the matching connection.
-    const handleAnswer = async ({ fromUserId, answer }) => {
+    const handleAnswer = async ({ fromUserId, answer, negotiationId }) => {
       if (!isHostRef.current) return;
       const entry = peerConnections.current.get(fromUserId);
-      if (!entry) {
+      if (!entry || (negotiationId && entry.negotiationId !== negotiationId)) {
         console.warn(`[WebRTC Host] Answer from ${fromUserId} but no connection (stale answer?). Ignoring.`);
         return;
       }
@@ -432,14 +448,16 @@ function useWebRTC({
       }
     };
 
-    const handleIceCandidate = async ({ fromUserId, candidate }) => {
+    const handleIceCandidate = async ({ fromUserId, candidate, negotiationId }) => {
       const entry = peerConnections.current.get(fromUserId);
       const pc = entry?.pc;
-      if (!pc || !pc.remoteDescription) {
+      if (pendingConnections.current.has(fromUserId) || !pc || !pc.remoteDescription || (negotiationId && entry.negotiationId !== negotiationId)) {
         if (!pendingCandidates.current.has(fromUserId)) {
           pendingCandidates.current.set(fromUserId, []);
         }
-        pendingCandidates.current.get(fromUserId).push(candidate);
+        const queue = pendingCandidates.current.get(fromUserId);
+        queue.push({ candidate, negotiationId });
+        if (queue.length > 64) queue.shift();
         return;
       }
       if (pc.signalingState === 'closed') return;
@@ -480,7 +498,7 @@ function useWebRTC({
     if (!isHost || !isStreamingActive || !localStreamRef.current || !socket?.connected) return;
 
     const currentGuestIds = new Set(participants.filter((p) => p.id !== selfId).map((p) => p.id));
-    const connectedIds = new Set(peerConnections.current.keys());
+    const connectedIds = new Set([...peerConnections.current.keys(), ...pendingConnections.current.keys()]);
 
     currentGuestIds.forEach((guestId) => {
       if (!connectedIds.has(guestId)) {
@@ -499,7 +517,7 @@ function useWebRTC({
 
   useEffect(() => {
     if (isHost) return;
-    for (const peerId of peerConnections.current.keys()) {
+    for (const peerId of new Set([...peerConnections.current.keys(), ...pendingConnections.current.keys()])) {
       if (!participants.some(participant => participant.id === peerId)) closePeerConnection(peerId);
     }
   }, [participants, isHost, closePeerConnection]);
@@ -535,6 +553,7 @@ function useWebRTC({
       const tracks = remoteStream.getTracks();
       if (tracks.length === 0 || tracks.every((t) => t.readyState === 'ended')) {
         console.log('[WebRTC Guest] All remote tracks ended — clearing stream to trigger renegotiation.');
+        remoteStreamRef.current = null;
         setRemoteStream(null);
       }
     };
@@ -561,7 +580,7 @@ function useWebRTC({
         const age = Date.now() - entry.createdAt;
         const ice = entry.pc.iceConnectionState;
         if ((ice === 'connected' || ice === 'completed') && remoteStreamRef.current?.getVideoTracks().some(track => track.readyState === 'live')) return;
-        const busy = ice === 'checking' || ice === 'connected' || ice === 'completed' || entry.pc.signalingState === 'have-remote-offer';
+        const busy = ice === 'new' || ice === 'disconnected' || ice === 'checking' || ice === 'connected' || ice === 'completed' || entry.pc.signalingState === 'have-remote-offer';
         if (busy && age < NEGOTIATION_GRACE_MS) {
           console.log(`[WebRTC Guest] Negotiation with ${hostId} in progress (${ice}, ${Math.round(age / 1000)}s) — waiting.`);
           return;
@@ -579,7 +598,7 @@ function useWebRTC({
       clearTimeout(firstTimer);
       clearInterval(interval);
     };
-  }, [isHost, sessionMode, socket, remoteStream]);
+  }, [isHost, sessionMode, socket]);
 
   // --- Host: stop streaming when mode returns to sync ---
   useEffect(() => {
@@ -609,6 +628,7 @@ function useWebRTC({
       console.log('[useWebRTC] Cleanup: closing all connections and stopping streams.');
       closeAllConnections();
       stopLocalStream();
+      remoteStreamRef.current = null;
       setRemoteStream(null);
       setIsStreamingActive(false);
       isStreamingActiveRef.current = false;

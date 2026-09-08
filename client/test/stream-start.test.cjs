@@ -21,7 +21,7 @@ test('guest already present receives offer when capture becomes ready', async ()
   );
   const stream = { getTracks: () => tracks, getVideoTracks: () => tracks.filter(track => track.kind === 'video') };
   const api = hook({
-    socket: { emit: (name, data) => events.push({ name, data }) },
+    socket: { timeout: () => ({ emit: (_event, cb) => cb(null, { iceServers: [{ urls: 'stun:test' }], expiresAt: 1e15 }) }), emit: (name, data) => events.push({ name, data }) },
     sessionId: 'room', isHost: true, sessionMode: 'stream',
     participants: [{ id: 'host' }, { id: 'guest' }], selfId: 'host',
     localStreamSourceRef: { current: { captureStream: () => stream } },
@@ -42,7 +42,7 @@ test('a received track does not stop recovery while ICE is stalled', async () =>
     .replace(/import .* from 'react';/, '')
     .replace('export const turnCredentials', 'const turnCredentials')
     .replace('export default useWebRTC;', 'return useWebRTC;');
-  const effects = [], timers = [], handlers = {}, events = [], peers = [];
+  const effects = [], timers = [], handlers = {}, events = [], peers = [], states = [];
   let now = 0;
   class Peer {
     constructor() { this.iceConnectionState = 'new'; peers.push(this); }
@@ -54,12 +54,12 @@ test('a received track does not stop recovery while ICE is stalled', async () =>
   }
   const hook = new Function('useState', 'useEffect', 'useRef', 'useCallback',
     'RTCPeerConnection', 'RTCSessionDescription', 'setTimeout', 'setInterval', 'Date', code)(
-    value => [value, () => {}], effect => effects.push(effect),
+    value => [value, next => states.push(next)], effect => effects.push(effect),
     value => ({ current: value }), fn => fn, Peer, class { constructor(data) { Object.assign(this, data); } },
     fn => timers.push(fn), fn => timers.push(fn), { now: () => now },
   );
   hook({
-    socket: { connected: true, on: (event, fn) => { handlers[event] = fn; }, emit: (event) => events.push(event) },
+    socket: { timeout: () => ({ emit: (_event, cb) => cb(null, { iceServers: [{ urls: 'stun:test' }], expiresAt: 1e15 }) }), connected: true, on: (event, fn) => { handlers[event] = fn; }, emit: (event) => events.push(event) },
     sessionId: 'room', isHost: false, sessionMode: 'stream',
     participants: [{ id: 'host' }, { id: 'guest' }], selfId: 'guest',
     localStreamSourceRef: { current: null },
@@ -68,11 +68,39 @@ test('a received track does not stop recovery while ICE is stalled', async () =>
   await handlers['webrtc:offer']({ fromUserId: 'host', offer: { type: 'offer', sdp: 'test' } });
   peers[0].ontrack({ track: { kind: 'video', readyState: 'live' },
     streams: [{ id: 'remote', getVideoTracks: () => [{ readyState: 'live' }] }] });
+  peers[0].iceConnectionState = 'checking';
   now = 20000;
+  timers.forEach(fn => fn());
+  assert.ok(!events.includes('webrtc:request-offer'));
+  now = 50000;
   timers.forEach(fn => fn());
   assert.ok(events.includes('webrtc:request-offer'));
   events.length = 0;
   peers[0].iceConnectionState = 'connected';
   timers.forEach(fn => fn());
   assert.ok(!events.includes('webrtc:request-offer'));
+  const replacement = { id: 'remote', getVideoTracks: () => [{ readyState: 'live' }] };
+  await handlers['webrtc:offer']({ fromUserId: 'host', offer: { type: 'offer', sdp: 'replacement' }, negotiationId: 'second' });
+  peers[1].ontrack({ track: { kind: 'video', readyState: 'live' }, streams: [replacement] });
+  assert.ok(states.includes(replacement), 'replacement stream with the same ID must reach the player');
+});
+
+test('leaving during credential lookup cancels the pending connection', async () => {
+  const code = fs.readFileSync('client/src/hooks/useWebRTC.js', 'utf8')
+    .replace(/import .* from 'react';/, '')
+    .replace('export default useWebRTC;', 'return useWebRTC;');
+  let answerConfig, created = 0;
+  const hook = new Function('useState','useEffect','useRef','useCallback','RTCPeerConnection',code)(
+    value => [value, () => {}], () => {}, value => ({ current:value }), fn => fn,
+    class { constructor() { created++; } },
+  );
+  const track = { kind:'video',readyState:'live',stop() {} };
+  const stream = { getTracks:()=>[track],getVideoTracks:()=>[track] };
+  const api = hook({ socket:{ timeout:()=>({emit:(_event,cb)=>{answerConfig=cb;}}), emit(){} },
+    sessionId:'room',isHost:true,sessionMode:'stream',participants:[{id:'host'},{id:'guest'}],selfId:'host',
+    localStreamSourceRef:{current:{captureStream:()=>stream}} });
+  await api.startStreaming(); api.stopStreaming();
+  answerConfig(null,{iceServers:[{urls:'stun:test'}],expiresAt:1e15});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(created,0);
 });

@@ -251,18 +251,12 @@ function VideoPlayer({
         }
     }, []);
 
-    // Guest stream arrived — don't leave the LOADING overlay up if onReady is slow/missing
-    useEffect(() => {
-        if (!isHost && remoteStream) {
-            setIsPlayerReady(true);
-        }
-    }, [isHost, remoteStream]);
-
     // Bind WebRTC MediaStream with a native <video> — ReactPlayer often never fires onReady for streams
     useEffect(() => {
         const el = guestVideoRef.current;
         if (!el || !remoteStream || isHost) return;
 
+        setIsPlayerReady(false);
         el.srcObject = remoteStream;
         const tryPlay = () => {
             el.play().catch((err) => {
@@ -273,11 +267,11 @@ function VideoPlayer({
 
         const onPlaying = () => setIsPlayerReady(true);
         el.addEventListener('playing', onPlaying);
-        el.addEventListener('loadedmetadata', onPlaying);
+
 
         return () => {
             el.removeEventListener('playing', onPlaying);
-            el.removeEventListener('loadedmetadata', onPlaying);
+
             if (el.srcObject === remoteStream) {
                 el.srcObject = null;
             }

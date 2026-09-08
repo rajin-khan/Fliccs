@@ -64,7 +64,7 @@ export default function Landing({ mode, setMode, socket, isConnected, onSessionS
             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-accent/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none" />
 
             {/* Header */}
-            <header className="fixed top-0 left-0 w-full px-8 py-6 md:px-12 lg:px-16 flex justify-between items-center z-50">
+            <header className="fixed top-0 left-0 w-full px-10 py-6 md:px-20 lg:px-24 flex justify-between items-center z-50">
                 <BrandLogo size="md" />
                 <span className="text-white/50 text-[10px] tracking-[0.2em] font-light leading-none" aria-label="Version 3.0">V3.0</span>
             </header>

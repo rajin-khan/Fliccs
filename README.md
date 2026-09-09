@@ -15,7 +15,6 @@ In Sync mode, everyone selects the same file and playback actions are shared. In
 - `client/src/seo/`: public route metadata, structured data, and invite previews. `scripts/prerender.mjs` uses the same page list to generate HTML and the sitemap.
 - `server/src/handlers/`: session, chat, and playback events. `server/src/turn.js` provides temporary relay credentials.
 - `client/test/` and `server/test/`: playback, recovery, TURN, and HTTP regression checks.
-- `plans/`: design and planning notes. These may describe an older baseline; check the date before treating a finding as current.
 
 ## Local development
 
@@ -46,11 +45,11 @@ pnpm run build
 node --test client/test/*.test.cjs server/test/*.test.js
 ```
 
-Build first: the HTTP checks inspect the generated pages and social images. `pnpm start` serves the production build and Socket.IO together. `client/test/relay.html` is a development-only browser check for forced relay connections and autoplay recovery.
+Build first: the HTTP checks inspect the generated pages and social images. `pnpm start` serves the production build and Socket.IO together. `client/test/relay.html` is a development-only browser check for forced relay connections and autoplay recovery. Start Vite against the local server and open `/test/relay.html` in two tabs using `localhost` and `127.0.0.1`. Check received bytes and decoded frames; a live remote track alone does not prove playback.
 
 ## Deployment and TURN
 
-Set `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN` privately on the server. Temporary ICE credentials are issued only to room members, cached, and renewed on demand before expiry. A desktop cron job is not required. See [TURN configuration](plans/turn-refresh.md).
+Set `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN` privately on the server. Temporary ICE credentials are issued only to room members, cached, and renewed on demand before expiry. A desktop cron job is not required. Never prefix these secrets with `VITE_` or commit their values. For local streaming, supply them in the server shell or an ignored environment file; Sync mode does not require TURN.
 
 WebRTC can use direct connections or a paid TURN relay. Fliccs does not store video files on its application server. Room and resume state currently live in server memory, so a server restart clears them. Streaming quality depends on the host, viewers, and network paths.
 

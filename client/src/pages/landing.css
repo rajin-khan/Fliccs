@@ -92,18 +92,18 @@
 .ticket-cinema.is-playing { background: #000; }
 .ticket-flight { position: absolute; transform-style: preserve-3d; pointer-events: none; }
 .ticket-flight .ticket-face, .ticket-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.ticket-back { display: block; border-radius: 2rem; background: #000; transform: rotateY(180deg); box-shadow: inset 0 0 0 1px #ffffff18; }
+.ticket-back { display: block; border-radius: 2rem; background: linear-gradient(145deg, #eee7f5, #d7c6e7); transform: rotateY(180deg); box-shadow: inset 0 0 0 1px #ffffff18; }
 .is-playing .ticket-flight { visibility: hidden; }
 .cinema-logo { position: absolute; z-index: 2; top: max(2rem, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); opacity: 0; }
-.is-playing .cinema-logo { animation: cinema-reveal 900ms ease-out 200ms both; }
+
 .cinema-close { display: grid; place-items: center; padding: 0; position: absolute; z-index: 3; top: max(1.5rem, env(safe-area-inset-top)); right: max(1.5rem, env(safe-area-inset-right)); width: 44px; height: 44px; border: 1px solid #ffffff26; border-radius: 50%; background: #0008; color: #fff9; font: 300 28px/1 sans-serif; transition: color 150ms, background 150ms; }
 .cinema-close:hover, .cinema-close:focus-visible { color: white; background: #24202d; outline: 2px solid #a77bdf; outline-offset: 3px; }
 @keyframes cinema-reveal { to { opacity: 1; } }
 @media (max-width: 700px) { .ticket-trigger { width: min(100% - 1.5rem, 320px); } }
 @media (prefers-reduced-motion: reduce) {
     .ticket-trigger, .ticket-trigger:hover { transform: rotate(2deg); transition: none; }
-    .ticket-float, .cinema-sculpture, .cinema-sculpture span { animation: none; }
-    .is-playing .cinema-logo, .cinema-film { animation-duration: 1ms; animation-delay: 0ms; }
+    .ticket-float { animation: none; }
+    .is-playing .cinema-logo { animation-duration: 1ms; animation-delay: 0ms; }
 }
 
 .cinema-close svg { display: block; width: 14px; height: 14px; }
@@ -111,7 +111,7 @@
 .ticket-slot .ticket-trigger { width: 100%; }
 .ticket-flight-float { width: 100%; height: 100%; transform-style: preserve-3d; }
 .cinema-logo { left: clamp(2rem, 5vw, 4.5rem); transform: none; }
-.cartoon-player { position: absolute; inset: 6rem 0 0; background: black; opacity: 0; animation: cinema-reveal 900ms ease-out 1.1s forwards; }
+.cartoon-player { position: absolute; inset: 0; background: black; opacity: 0; visibility: hidden; transition: opacity 500ms; }
 .cartoon-player:fullscreen { inset: 0; opacity: 1; }
 .cartoon-player video { width: 100%; height: 100%; object-fit: contain; }
 .cartoon-caption { position: absolute; bottom: 105px; left: 24px; z-index: 2; text-shadow: 0 2px 12px black; pointer-events: none; }
@@ -125,3 +125,19 @@
 @media (prefers-reduced-motion: reduce) { .cartoon-player { animation-duration: 1ms; animation-delay: 0ms; } }
 .ticket-trigger { transform-style: preserve-3d; }
 .ticket-flight-float { filter: drop-shadow(0 22px 18px #0007); }
+
+.is-playing .cartoon-player { opacity: 1; visibility: visible; }
+.cinema-logo, .cinema-close, .cartoon-caption, .cartoon-navigation, .cartoon-player > .absolute { transition: opacity 350ms; }
+.ticket-cinema:not(.controls-visible) .cinema-logo,
+.ticket-cinema:not(.controls-visible) .cinema-close,
+.ticket-cinema:not(.controls-visible) .cartoon-caption,
+.ticket-cinema:not(.controls-visible) .cartoon-navigation,
+.ticket-cinema:not(.controls-visible) .cartoon-player > .absolute { opacity: 0; pointer-events: none; }
+.is-playing.controls-visible .cinema-logo { opacity: 1; }
+.ticket-cinema :is(button, a, input):focus-visible { opacity: 1; }
+.ticket-cinema:not(.controls-visible):has(:focus-visible) :is(.cinema-close, .cartoon-navigation, .cartoon-caption, .cartoon-player > .absolute) { opacity: 1; pointer-events: auto; }
+.ticket-cinema:not(.is-playing) .cinema-close { opacity: 0; pointer-events: none; }
+
+.cartoon-status { left: 50%; width: auto; max-width: calc(100% - 2rem); transform: translateX(-50%); border-radius: 1rem; }
+.cartoon-status button { display: block; margin: .75rem auto 0; padding: .5rem 1rem; border: 1px solid #a77bdf60; border-radius: 999px; background: #6435ac; }
+.ticket-cinema:not(.controls-visible):not(:has(:focus-visible)) .cartoon-player > .absolute * { pointer-events: none; }

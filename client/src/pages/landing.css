@@ -29,6 +29,7 @@
 .intro-ticket img { width: 64px; height: 64px; object-fit: contain; margin: 2.5rem auto 1.5rem; }
 .ticket-title { font-size: clamp(3rem, 5.5vw, 5rem); text-transform: uppercase; text-align: center; line-height: .95; font-weight: 500; letter-spacing: -.03em; margin-bottom: 2.5rem; }
 .ticket-stub { position: relative; display: flex; justify-content: space-between; align-items: end; gap: 1rem; border-top: 1px dashed #25202c60; height: 74px; padding-block: 1.25rem; font-size: .8125rem; line-height: 1.3; }
+.ticket-invitation { font-size: 1rem; font-weight: 700; letter-spacing: .08em; background: linear-gradient(110deg, #482078, #8950c8 50%, #542589); background-clip: text; -webkit-background-clip: text; color: transparent; }
 .ticket-mark { font-size: 2rem; line-height: 1; font-style: italic; font-weight: 500; letter-spacing: -.06em; color: #6435ac; }
 .intro-modes { border-top: 1px solid #ffffff26; padding-block: 2.5rem 4rem; }
 .intro-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }

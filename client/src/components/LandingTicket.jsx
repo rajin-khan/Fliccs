@@ -8,7 +8,7 @@ function TicketFace() {
         <span className="ticket-top"><span>Fliccs picture club</span><span>Est. 2025</span></span>
         <img src="/fliccs-icon.png" alt="" width="96" height="96" />
         <span className="ticket-title">Saved you<br />a seat.</span>
-        <span className="ticket-stub"><span>Click for a film.<br />We picked a good one.</span><span className="ticket-mark">fliccs</span></span>
+        <span className="ticket-stub"><span><span className="ticket-invitation">CLICK HERE</span><br />for a film.</span><span className="ticket-mark">fliccs</span></span>
     </span>;
 }
 

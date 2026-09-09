@@ -98,12 +98,7 @@
 .is-playing .cinema-logo { animation: cinema-reveal 900ms ease-out 200ms both; }
 .cinema-close { display: grid; place-items: center; padding: 0; position: absolute; z-index: 3; top: max(1.5rem, env(safe-area-inset-top)); right: max(1.5rem, env(safe-area-inset-right)); width: 44px; height: 44px; border: 1px solid #ffffff26; border-radius: 50%; background: #0008; color: #fff9; font: 300 28px/1 sans-serif; transition: color 150ms, background 150ms; }
 .cinema-close:hover, .cinema-close:focus-visible { color: white; background: #24202d; outline: 2px solid #a77bdf; outline-offset: 3px; }
-.cinema-film { position: absolute; inset: 6rem 0 0; display: grid; place-items: center; overflow: hidden; opacity: 0; animation: cinema-reveal 1.5s ease-out 1.3s forwards; perspective: 1000px; }
-.cinema-sculpture { width: min(52vw, 360px); aspect-ratio: 1; position: relative; transform-style: preserve-3d; animation: cinema-orbit 18s ease-in-out infinite alternate; }
-.cinema-sculpture span { position: absolute; inset: calc(var(--ring) * 5%); border: 1px solid #be8aff; border-radius: 28%; box-shadow: 0 0 18px #8a43d944, inset 0 0 18px #8a43d922; transform: rotateZ(calc(var(--ring) * 14deg)) translateZ(calc(var(--ring) * 12px)); animation: cinema-breathe 5s ease-in-out calc(var(--ring) * -.4s) infinite alternate; }
 @keyframes cinema-reveal { to { opacity: 1; } }
-@keyframes cinema-orbit { from { transform: rotateX(58deg) rotateY(-18deg) rotateZ(-30deg); } to { transform: rotateX(-24deg) rotateY(35deg) rotateZ(160deg); } }
-@keyframes cinema-breathe { from { opacity: .25; scale: .85; } to { opacity: 1; scale: 1; } }
 @media (max-width: 700px) { .ticket-trigger { width: min(100% - 1.5rem, 320px); } }
 @media (prefers-reduced-motion: reduce) {
     .ticket-trigger, .ticket-trigger:hover { transform: rotate(2deg); transition: none; }
@@ -112,3 +107,21 @@
 }
 
 .cinema-close svg { display: block; width: 14px; height: 14px; }
+.ticket-slot { width: 100%; max-width: 360px; justify-self: center; }
+.ticket-slot .ticket-trigger { width: 100%; }
+.ticket-flight-float { width: 100%; height: 100%; transform-style: preserve-3d; }
+.cinema-logo { left: clamp(2rem, 5vw, 4.5rem); transform: none; }
+.cartoon-player { position: absolute; inset: 6rem 0 0; background: black; opacity: 0; animation: cinema-reveal 900ms ease-out 1.1s forwards; }
+.cartoon-player:fullscreen { inset: 0; opacity: 1; }
+.cartoon-player video { width: 100%; height: 100%; object-fit: contain; }
+.cartoon-caption { position: absolute; bottom: 105px; left: 24px; z-index: 2; text-shadow: 0 2px 12px black; pointer-events: none; }
+.cartoon-caption h2 { font-size: clamp(1.5rem, 3vw, 2.4rem); font-weight: 500; }
+.cartoon-caption a { font-size: .85rem; color: #d2c5e0; pointer-events: auto; }
+.cartoon-navigation { position: absolute; right: 24px; bottom: 115px; display: flex; gap: .65rem; z-index: 2; }
+.cartoon-navigation button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #0009; border: 1px solid #ffffff30; color: white; }
+.cartoon-navigation button:hover { background: #6435ac; }
+.cartoon-status { position: absolute; top: 45%; width: 100%; padding: 1rem; text-align: center; background: #000a; }
+@media (max-width: 700px) { .ticket-slot { width: min(100% - 1.5rem, 320px); } .cartoon-caption { left: 12px; bottom: 90px; max-width: calc(100% - 135px); } .cartoon-navigation { right: 12px; bottom: 95px; } }
+@media (prefers-reduced-motion: reduce) { .cartoon-player { animation-duration: 1ms; animation-delay: 0ms; } }
+.ticket-trigger { transform-style: preserve-3d; }
+.ticket-flight-float { filter: drop-shadow(0 22px 18px #0007); }

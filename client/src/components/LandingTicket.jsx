@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import BrandLogo from './BrandLogo';
+import CartoonPlayer from './CartoonPlayer';
 
 function TicketFace() {
     return <span className="intro-ticket ticket-face">
@@ -13,6 +14,7 @@ function TicketFace() {
 
 export default function LandingTicket() {
     const trigger = useRef(null);
+    const slot = useRef(null);
     const dialog = useRef(null);
     const card = useRef(null);
     const frame = useRef(null);
@@ -23,10 +25,12 @@ export default function LandingTicket() {
 
     useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!origin) return;
         const modal = dialog.current;
         const previousOverflow = document.body.style.overflow;
+        const previousPadding = document.body.style.paddingRight;
+        document.body.style.paddingRight = `${window.innerWidth - document.documentElement.clientWidth}px`;
         document.body.style.overflow = 'hidden';
         modal.showModal();
         const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -36,7 +40,7 @@ export default function LandingTicket() {
         const animation = card.current.animate(reduced ? [
             { opacity: 1 }, { opacity: 0 },
         ] : [
-            { transform: 'perspective(1200px) translate(0, 0) rotateY(0deg) rotateZ(2deg) scale(1)', offset: 0 },
+            { transform: origin.transform, offset: 0 },
             { transform: `perspective(1200px) translate(${dx}px, ${dy}px) rotateY(180deg) rotateZ(90deg) scale(1.08)`, offset: .58 },
             { transform: `perspective(1200px) translate(${dx}px, ${dy}px) rotateY(180deg) rotateZ(90deg) scale(${scale})`, offset: 1 },
         ], { duration: reduced ? 180 : 1700, easing: 'cubic-bezier(.65, 0, .2, 1)', fill: 'forwards' });
@@ -50,10 +54,12 @@ export default function LandingTicket() {
             animation.cancel();
             modal.close();
             document.body.style.overflow = previousOverflow;
+            document.body.style.paddingRight = previousPadding;
         };
     }, [origin]);
 
     function resetTilt() {
+        if (origin) return;
         cancelAnimationFrame(frame.current);
         trigger.current?.style.removeProperty('--tilt-x');
         trigger.current?.style.removeProperty('--tilt-y');
@@ -61,6 +67,7 @@ export default function LandingTicket() {
     }
 
     function tilt(event) {
+        if (origin) return;
         if (event.pointerType === 'touch' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const { clientX, clientY, currentTarget } = event;
         cancelAnimationFrame(frame.current);
@@ -83,25 +90,37 @@ export default function LandingTicket() {
         try {
             await animation.finished;
             setOrigin(null);
+            trigger.current.firstElementChild.getAnimations().forEach(animation => animation.play());
         } catch { /* Unmount cancels the flight. */ }
     }
 
+    function open() {
+        cancelAnimationFrame(frame.current);
+        const element = trigger.current;
+        const floating = element.firstElementChild;
+        floating.getAnimations().forEach(animation => animation.pause());
+        const transform = getComputedStyle(element).transform;
+        const floatTransform = getComputedStyle(floating).transform;
+        const rect = slot.current.getBoundingClientRect();
+        setOrigin({ left: rect.left, top: rect.top, width: element.offsetWidth, height: element.offsetHeight, transform, floatTransform, glint: getComputedStyle(element).getPropertyValue('--glint-x') });
+    }
+
     return <>
+        <div ref={slot} className="ticket-slot">
         <button ref={trigger} className="ticket-trigger" aria-label="Pick up your ticket and play the Fliccs preview" aria-haspopup="dialog"
-            style={{ visibility: origin ? 'hidden' : undefined }} onPointerMove={tilt} onPointerLeave={resetTilt} onBlur={resetTilt}
-            onClick={() => { setOrigin(trigger.current.getBoundingClientRect()); resetTilt(); }}>
-            <span className="ticket-float"><TicketFace /></span>
+            style={{ visibility: origin ? 'hidden' : undefined, transform: origin?.transform, transition: origin ? 'none' : undefined }} onPointerMove={tilt} onPointerLeave={resetTilt} onBlur={resetTilt}
+            onClick={open}>
+            <span className="ticket-float" style={origin ? { animationPlayState: 'paused', transform: origin.floatTransform } : undefined}><TicketFace /></span>
         </button>
+        </div>
         <dialog ref={dialog} className={`ticket-cinema${playing ? ' is-playing' : ''}`} aria-label="Fliccs preview" onCancel={event => { event.preventDefault(); close(); }}>
             {origin && <>
-                <div ref={card} className="ticket-flight" aria-hidden="true" style={{ left: origin.left, top: origin.top, width: origin.width, height: origin.height }}>
-                    <TicketFace /><span className="ticket-back" />
+                <div ref={card} className="ticket-flight" aria-hidden="true" style={{ left: origin.left, top: origin.top, width: origin.width, height: origin.height, '--glint-x': origin.glint }}>
+                    <div className="ticket-flight-float" style={{ transform: origin.floatTransform }}><TicketFace /><span className="ticket-back" /></div>
                 </div>
                 <div className="cinema-logo"><BrandLogo size="md" /></div>
                 <button className="cinema-close" onClick={close} aria-label="Close preview" autoFocus><FaTimes aria-hidden="true" /></button>
-                {playing && <div className="cinema-film" role="img" aria-label="Animated purple light sculpture">
-                    <div className="cinema-sculpture">{Array.from({ length: 7 }, (_, i) => <span key={i} style={{ '--ring': i }} />)}</div>
-                </div>}
+                {playing && <CartoonPlayer />}
             </>}
         </dialog>
     </>;

@@ -1,7 +1,7 @@
 {
   "name": "Fliccs \u2014 Watch Together",
   "short_name": "Fliccs",
-  "start_url": "/",
+  "start_url": "/watch",
   "display": "browser",
   "background_color": "#0b0815",
   "theme_color": "#0b0815",

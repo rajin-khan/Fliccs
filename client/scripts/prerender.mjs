@@ -1,7 +1,7 @@
 import { createServer } from 'vite';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { origin, pages, missing, invite, structuredData } from '../src/seo/pages.js';
+import { origin, pages, missing, invite, structuredData, robotsFor } from '../src/seo/pages.js';
 const escape = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 const template = await readFile('dist/index.html', 'utf8');
 const server = await createServer({ server: { middlewareMode: true, hmr: false }, ssr: { noExternal: ['react-router-dom', 'react-router'], resolve: { conditions: ['module', 'import', 'production'] } }, appType: 'custom' });
@@ -14,7 +14,7 @@ try {
     const url = invited ? '__INVITE_URL__' : origin + path;
     const head = `<title>${escape(page.title)}</title>
 <meta name="description" content="${escape(page.description)}" />
-<meta name="robots" content="${path === '/404' || invited ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'}" />
+<meta name="robots" content="${invited ? 'noindex, nofollow' : robotsFor(path)}" />
 <link rel="canonical" href="${url}" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Fliccs" />
@@ -33,10 +33,10 @@ try {
 <meta name="twitter:image" content="${origin}/og/${image}.png" />
 <meta name="twitter:image:alt" content="${alt}" />
 <script id="structured-data" type="application/ld+json">${JSON.stringify(invited ? {} : structuredData(path)).replaceAll('<', '\\u003c')}</script>`;
-    const html = template.replace(/<!-- SEO_START -->[\s\S]*?<!-- SEO_END -->/, head).replace('<div id="root"></div>', `<div id="root">${render(invited ? '/' : path)}</div>`);
+    const html = template.replace(/<!-- SEO_START -->[\s\S]*?<!-- SEO_END -->/, head).replace('<div id="root"></div>', `<div id="root">${render(invited ? '/watch' : path)}</div>`);
     const dest = path === '/' ? 'dist/index.html' : invited ? 'dist/.templates/invite.html' : path === '/404' ? 'dist/404.html' : `dist${path}/index.html`;
     await mkdir(resolve(dest, '..'), { recursive: true });
     await writeFile(dest, html);
   }
-  await writeFile('dist/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${Object.keys(pages).map(path => `<url><loc>${origin}${path}</loc></url>`).join('')}</urlset>\n`);
+  await writeFile('dist/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${Object.keys(pages).filter(path => !pages[path].noindex).map(path => `<url><loc>${origin}${path}</loc></url>`).join('')}</urlset>\n`);
 } finally { await server.close(); }

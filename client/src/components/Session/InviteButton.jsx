@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { FaLink, FaShareAlt, FaCheckCircle } from 'react-icons/fa';
 
 function buildShareableLink(sessionId, sessionPassword) {
-    return `${window.location.origin}${window.location.pathname}?join=${encodeURIComponent(sessionId)}&pass=${encodeURIComponent(sessionPassword)}`;
+    return `${window.location.origin}/watch?join=${encodeURIComponent(sessionId)}&pass=${encodeURIComponent(sessionPassword)}`;
 }
 
 function buildInviteMessage(sessionId, sessionPassword) {

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { origin, pages, pageMeta, structuredData, invite, isInvite, inviteUrl } from './pages';
+import { origin, robotsFor, pageMeta, structuredData, invite, isInvite, inviteUrl } from './pages';
 
 export default function Metadata() {
   const { pathname, search } = useLocation();
@@ -13,7 +13,7 @@ export default function Metadata() {
     document.title = page.title;
     const values = {
       description: page.description,
-      robots: !Object.hasOwn(pages, path) || new URLSearchParams(search).has('join') || new URLSearchParams(search).has('pass') ? 'noindex, nofollow' : 'index, follow, max-image-preview:large',
+      robots: robotsFor(path, search),
       'og:title': page.title, 'og:description': page.description, 'og:url': invited ? inviteUrl(search) : origin + path,
       'og:image': image, 'og:image:alt': alt, 'twitter:image': image, 'twitter:image:alt': alt,
       'twitter:title': page.title, 'twitter:description': page.description,

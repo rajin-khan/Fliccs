@@ -1,6 +1,6 @@
 # Fliccs
 
-Watch local videos together at [fliccs.com](https://fliccs.com). The introduction lives at [/landing](https://fliccs.com/landing).
+Watch local videos together at [fliccs.com](https://fliccs.com). The homepage introduces Fliccs; [/watch](https://fliccs.com/watch) opens the product.
 
 In Sync mode, everyone selects the same file and playback actions are shared. In Stream mode, the host sends their video to guests through WebRTC. Rooms have invite links, passwords, and chat. Guests do not need accounts.
 

@@ -13,8 +13,8 @@ export default function LandingPage() {
                     <div>
                         <p className="intro-pill">Real time. Real fast.</p>
                         <h1 id="intro-title">WATCH<br />TOGETHER.</h1>
-                        <p className="intro-description">Your videos. Your friends. One room.</p>
-                        <Link to="/" className="intro-button">START WATCHING</Link>
+                        <p className="intro-description">Watch local videos with friends.</p>
+                        <Link to="/watch" className="intro-button">START WATCHING</Link>
                         <p className="intro-note">Live chat. Private rooms. No account needed.</p>
                     </div>
                     <div className="intro-ticket" aria-hidden="true">
@@ -60,6 +60,7 @@ export default function LandingPage() {
                 <div className="intro-footer-pill">
                 <span className="font-medium bg-gradient-to-r from-purple-400/60 via-gray-400 to-purple-400/60 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine">Fliccs &bull; 2026</span>
                 <nav aria-label="Information">
+                    <Link to="/pricing">Pricing</Link>
                     <Link to="/privacy">Privacy</Link>
                     <Link to="/terms-and-conditions">Terms</Link>
                     <Link to="/refund">Refunds</Link>

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import StreamRoom from '../components/StreamRoom.jsx';
 import RoomEntry from '../components/RoomEntry.jsx';
 import { useSocket } from '../hooks/useSocket';
 import AutoJoinModal from '../components/Session/AutoJoinModal.jsx';
+
+const StreamRoom = lazy(() => import('../components/StreamRoom.jsx'));
 
 export default function WatchPage() {
     const navigate = useNavigate();
@@ -110,6 +111,7 @@ export default function WatchPage() {
 
             {sessionId ? (
                 <div className="min-h-screen bg-brand-bg text-white font-barlow flex flex-col items-center justify-center">
+                    <Suspense fallback={<p role="status">Opening your room…</p>}>
                     <StreamRoom
                         socket={socket}
                         sessionId={sessionId}
@@ -117,6 +119,7 @@ export default function WatchPage() {
                         participants={participants}
                         onLeave={resetSessionState}
                     />
+                    </Suspense>
                 </div>
             ) : (
                 <>

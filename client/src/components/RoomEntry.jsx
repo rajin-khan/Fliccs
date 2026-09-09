@@ -110,7 +110,7 @@ export default function RoomEntry({ mode, setMode, socket, isConnected, onSessio
                         </div>
 
                         <div className="mt-6 flex justify-center items-center gap-6">
-                            <Link to="/landing" className="text-sm text-white/40 hover:text-white uppercase tracking-widest transition-colors font-bold">
+                            <Link to="/" className="text-sm text-white/40 hover:text-white uppercase tracking-widest transition-colors font-bold">
                                 About Fliccs
                             </Link>
                             <span className="text-white/10 text-xs">•</span>

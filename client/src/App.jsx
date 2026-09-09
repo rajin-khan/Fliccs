@@ -1,7 +1,7 @@
 import Metadata from './seo/Metadata';
 import PageLayout from './components/Layout/PageLayout';
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import LandingPage from './pages/LandingPage.jsx';
 
 import WatchPage from './pages/WatchPage.jsx';
@@ -18,13 +18,14 @@ export function AppRoutes() {
         <>
             <Metadata />
             <Routes>
-                <Route path="/" element={<WatchPage />} />
-                <Route path="/landing" element={<LandingPage />} />
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/watch" element={<WatchPage />} />
+                <Route path="/landing" element={<Navigate to="/" replace />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/terms-and-conditions" element={<TermsPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/refund" element={<RefundPage />} />
-                <Route path="*" element={<PageLayout title="Page not found" description="This page does not exist."><a href="/">Start or join a watch party</a></PageLayout>} />
+                <Route path="*" element={<PageLayout title="Page not found" description="This page does not exist."><a href="/watch">Start or join a watch party</a></PageLayout>} />
             </Routes>
         </>
     );

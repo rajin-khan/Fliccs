@@ -8,7 +8,7 @@ import { readFile } from 'node:fs/promises';
 
 import rateLimit from 'express-rate-limit';
 import slowDown from 'express-slow-down';
-import { pages, isInvite, inviteUrl } from '../../client/src/seo/pages.js';
+import { pages, isInvite, inviteUrl, robotsFor } from '../../client/src/seo/pages.js';
 
 import { registerSessionHandlers } from './handlers/session.js';
 import { registerSyncHandlers } from './handlers/sync.js';
@@ -68,17 +68,14 @@ app.get('/health', (req, res) => {
 // Keep private invite URLs out of search results without blocking crawler access
 // to the noindex header. Public-page canonicals exclude query parameters.
 app.use((req, res, next) => {
-  if ('join' in req.query || 'pass' in req.query) res.set('X-Robots-Tag', 'noindex, nofollow');
+  if (req.path === '/watch' || 'join' in req.query || 'pass' in req.query) res.set('X-Robots-Tag', 'noindex, nofollow');
   if (process.env.NODE_ENV === 'production' && ['www.fliccs.com', 'fliccs.up.railway.app'].includes(req.hostname)) {
     return res.redirect(301, `https://fliccs.com${req.originalUrl}`);
   }
-  if (req.path.endsWith('/index.html')) {
-    const canonicalPath = req.path.slice(0, -11) || '/';
-    if (Object.hasOwn(pages, canonicalPath)) return res.redirect(301, canonicalPath + req.originalUrl.slice(req.path.length));
-  }
-  if (req.path.length > 1 && req.path.endsWith('/')) {
-    const query = req.originalUrl.slice(req.path.length);
-    return res.redirect(301, req.path.replace(/\/+$/, '') + query);
+  const normalizedPath = req.path.replace(/\/index\.html$/, '').replace(/\/+$/, '') || '/';
+  const canonicalPath = normalizedPath === '/landing' ? '/' : normalizedPath;
+  if (canonicalPath !== req.path && Object.hasOwn(pages, canonicalPath)) {
+    return res.redirect(301, canonicalPath + req.originalUrl.slice(req.path.length));
   }
   next();
 });
@@ -93,6 +90,7 @@ app.use(async (req, res) => {
     return res.set('Cache-Control', 'private, no-store').type('html').send(html.replaceAll('__INVITE_URL__', url));
   }
   if ((req.method === 'GET' || req.method === 'HEAD') && Object.hasOwn(pages, req.path)) {
+    res.set('X-Robots-Tag', robotsFor(req.path, search));
     return res.sendFile(path.join(rootDir, req.path === '/' ? 'index.html' : `${req.path}/index.html`));
   }
   res.status(404).set('X-Robots-Tag', 'noindex').sendFile(path.join(rootDir, '404.html'));

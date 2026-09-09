@@ -21,9 +21,8 @@
 .intro-pill { display: inline-block; padding: .65rem 1.25rem; border: 1px solid rgb(167 123 223 / .25); border-radius: 999px; background: rgb(255 255 255 / .04); color: #a77bdf; font-size: .8125rem; font-weight: 700; letter-spacing: .25em; text-transform: uppercase; box-shadow: 0 8px 28px rgb(100 53 172 / .12); }
 .intro-hero h1 { font-size: clamp(4rem, 7.5vw, 6.5rem); font-weight: 500; line-height: .9; letter-spacing: -.025em; margin-block: 1.5rem; background: linear-gradient(135deg, white, white 35%, rgb(255 255 255 / .4)); background-clip: text; -webkit-background-clip: text; color: transparent; }
 .intro-description { font-size: 1.375rem; font-weight: 300; line-height: 1.5; max-width: 23rem; color: #c4c0cb; }
-.intro-button { display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; min-height: 48px; margin-top: 2rem; background: #6435ac; color: white; font-size: .875rem; font-weight: 500; letter-spacing: .15em; border: 1px solid rgb(167 123 223 / .4); border-radius: 999px; box-shadow: 0 8px 32px rgb(100 53 172 / .2); transition: background .2s, box-shadow .2s; }
+.intro-button { display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; min-height: 48px; margin-top: 1.5rem; background: #6435ac; color: white; font-size: .875rem; font-weight: 500; letter-spacing: .15em; border: 1px solid rgb(167 123 223 / .4); border-radius: 999px; box-shadow: 0 8px 32px rgb(100 53 172 / .2); transition: background .2s, box-shadow .2s; }
 .intro-button:hover { background: #7645bf; box-shadow: 0 8px 36px rgb(100 53 172 / .35); }
-.intro-note { margin-top: 1rem; font-size: .9375rem; color: var(--intro-purple); }
 .intro-ticket { mask-image: radial-gradient(circle at 0 53px, transparent 8px, black 8.5px), radial-gradient(circle at 100% 53px, transparent 8px, black 8.5px), radial-gradient(circle at 0 calc(100% - 74px), transparent 8px, black 8.5px), radial-gradient(circle at 100% calc(100% - 74px), transparent 8px, black 8.5px); mask-composite: intersect; background: linear-gradient(145deg, #eee7f5, #d7c6e7); color: #30203e; border: 1px solid #ffffff50; border-radius: 2rem; box-shadow: 0 28px 90px -35px rgb(100 53 172 / .5); padding: 1.5rem 1.75rem 0; max-width: 360px; width: 100%; justify-self: center; }
 .ticket-top { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: 1rem; line-height: 12px; border-bottom: 1px solid #25202c40; font-size: .6875rem; text-transform: uppercase; letter-spacing: .12em; }
 .intro-ticket img { width: 64px; height: 64px; object-fit: contain; margin: 2.5rem auto 1.5rem; }
@@ -142,3 +141,5 @@
 .cartoon-status { left: 50%; width: auto; max-width: calc(100% - 2rem); transform: translateX(-50%); border-radius: 1rem; }
 .cartoon-status button { display: block; margin: .75rem auto 0; padding: .5rem 1rem; border: 1px solid #a77bdf60; border-radius: 999px; background: #6435ac; }
 .ticket-cinema:not(.controls-visible):not(:has(:focus-visible)) .cartoon-player > .absolute * { pointer-events: none; }
+
+@media (min-width: 701px) { .ticket-slot { position: relative; left: clamp(-24px, -2vw, -16px); } }

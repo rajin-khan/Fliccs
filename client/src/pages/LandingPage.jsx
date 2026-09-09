@@ -14,9 +14,8 @@ export default function LandingPage() {
                     <div>
                         <p className="intro-pill">Real time. Real fast.</p>
                         <h1 id="intro-title">WATCH<br />TOGETHER.</h1>
-                        <p className="intro-description">Watch local videos with friends.</p>
-                        <Link to="/watch" className="intro-button">START WATCHING</Link>
-                        <p className="intro-note">Live chat. Private rooms. No account needed.</p>
+                        <p className="intro-description">Bring your videos and friends. No account needed.</p>
+                        <Link to="/watch" className="intro-button">GET STARTED</Link>
                     </div>
                     <LandingTicket />
                 </section>

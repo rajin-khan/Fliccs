@@ -11,9 +11,9 @@ export default function LandingPage() {
                 <section className="intro-hero" aria-labelledby="intro-title">
                     <div>
                         <p className="intro-eyebrow">A watch party, wherever you are.</p>
-                        <h1 id="intro-title">Press play.<br /><em>Stay close.</em></h1>
+                        <h1 id="intro-title">Press play.<br /><em className="animate-shine">Stay close.</em></h1>
                         <p className="intro-description">For the films you keep quoting. The videos you have to share. And the people you wish were on the sofa.</p>
-                        <Link to="/" className="intro-button">Start watching <span aria-hidden="true">↗</span></Link>
+                        <Link to="/" className="intro-button">Start watching</Link>
                         <p className="intro-note">Right in your browser. No account needed.</p>
                     </div>
                     <div className="intro-ticket" aria-hidden="true">
@@ -46,16 +46,16 @@ export default function LandingPage() {
 
                 <section className="intro-invitation" aria-labelledby="invitation-title">
                     <h2 id="invitation-title">Make a night of it.</h2>
-                    <Link to="/" className="intro-text-link">Open Fliccs <span aria-hidden="true">↗</span></Link>
+                    <Link to="/" className="intro-button intro-button-secondary">Open Fliccs</Link>
                 </section>
             </main>
             <footer className="intro-footer">
-                <span>Fliccs © 2026</span>
+                <span className="font-medium bg-gradient-to-r from-purple-400/60 via-gray-400 to-purple-400/60 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine">Fliccs &bull; 2026</span>
                 <nav aria-label="Information">
                     <Link to="/privacy">Privacy</Link>
                     <Link to="/terms-and-conditions">Terms</Link>
                     <Link to="/refund">Refunds</Link>
-                    <a href="https://rajinkhan.com" target="_blank" rel="noopener noreferrer">Made by Rajin ↗</a>
+                    <a href="https://rajinkhan.com" target="_blank" rel="noopener noreferrer" className="intro-signature font-la-belle-aurore bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine">Rajin Khan</a>
                 </nav>
             </footer>
         </div>

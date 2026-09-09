@@ -57,6 +57,7 @@ export default function LandingPage() {
                 </section>
             </main>
             <footer className="intro-footer">
+                <div className="intro-footer-pill">
                 <span className="font-medium bg-gradient-to-r from-purple-400/60 via-gray-400 to-purple-400/60 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine">Fliccs &bull; 2026</span>
                 <nav aria-label="Information">
                     <Link to="/privacy">Privacy</Link>
@@ -64,6 +65,7 @@ export default function LandingPage() {
                     <Link to="/refund">Refunds</Link>
                     <a href="https://rajinkhan.com" target="_blank" rel="noopener noreferrer" className="intro-signature font-la-belle-aurore bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-[length:200%_auto] text-transparent bg-clip-text animate-shine">Rajin Khan</a>
                 </nav>
+                </div>
             </footer>
         </div>
     );

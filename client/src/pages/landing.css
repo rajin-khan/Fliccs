@@ -14,7 +14,7 @@
 .intro-page::after { top: 35%; right: -200px; background: rgb(76 46 144 / .2); animation: intro-haze 16s ease-in-out infinite alternate-reverse; }
 .intro-page ::selection { background: #6435ac; color: white; }
 .intro-page .site-header { position: absolute; }
-.intro-content, .intro-footer { width: min(100% - clamp(4rem, 10vw, 9rem), 1120px); margin-inline: auto; }
+.intro-content { width: min(100% - clamp(4rem, 10vw, 9rem), 1120px); margin-inline: auto; }
 .intro-skip { position: absolute; top: 1rem; left: 1rem; padding: .75rem; background: white; color: black; z-index: 100; transform: translateY(-200%); }
 .intro-skip:focus { transform: none; }
 .intro-hero { display: grid; grid-template-columns: 1.4fr 1fr; align-items: center; gap: clamp(2rem, 5vw, 4rem); max-width: 1040px; margin-inline: auto; padding-block: clamp(9rem, 13vw, 12rem) clamp(5rem, 9vw, 8rem); }
@@ -35,11 +35,12 @@
 .intro-mode-grid article { border: 1px solid rgb(167 123 223 / .2); background: rgb(8 8 14 / .65); border-radius: 2rem; padding: clamp(1.5rem, 3vw, 2.5rem); }
 .intro-mode-grid h3 { font-size: 1.5rem; letter-spacing: .12em; line-height: 1; font-weight: 500; margin-bottom: .75rem; }
 .intro-mode-grid p { max-width: 25rem; color: #c4c0cb; font-size: 1.25rem; font-weight: 300; line-height: 1.5; }
-.intro-footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 1.5rem 2rem; border-top: 1px solid #ffffff26; font-size: .875rem; color: var(--intro-muted); }
-.intro-footer nav { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; }
-.intro-footer a { display: inline-flex; align-items: center; min-height: 44px; }
+.intro-footer { padding: 0 .75rem max(1rem, env(safe-area-inset-bottom)); text-align: center; }
+.intro-footer-pill { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .25rem 1.5rem; max-width: 100%; padding: .625rem 2rem; border: 1px solid rgb(255 255 255 / .1); border-radius: 999px; background: rgb(5 5 5 / .95); box-shadow: 0 10px 15px -3px rgb(0 0 0 / .2); backdrop-filter: blur(24px); font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: rgb(255 255 255 / .4); }
+.intro-footer nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .25rem 1.5rem; }
+.intro-footer a { display: inline-flex; align-items: center; min-height: 32px; }
 .intro-footer a:not(.intro-signature):hover { color: white; }
-.intro-footer .intro-signature { padding-inline: .25rem; font-size: 1.125rem; line-height: 1.5; }
+.intro-footer .intro-signature { padding-inline: .25rem; font-size: .86rem; line-height: 1.5; }
 .intro-signature:hover { opacity: .8; }
 .intro-room-preview { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 3rem; margin-top: 1.5rem; padding: clamp(1.5rem, 3vw, 2.5rem); border: 1px solid rgb(167 123 223 / .2); border-radius: 2rem; background: rgb(8 8 14 / .65); }
 .intro-chat-example h3 { display: flex; align-items: center; gap: .75rem; font-size: .875rem; font-weight: 500; letter-spacing: .15em; margin-bottom: 1.25rem; }
@@ -65,5 +66,7 @@
     .intro-mode-grid { grid-template-columns: 1fr; gap: 1rem; }
     .intro-room-preview { grid-template-columns: 1fr; gap: 2rem; }
     .intro-modes { padding-block: 3rem; }
-    .intro-footer { align-items: start; flex-direction: column; }
+    .intro-footer-pill { padding-inline: 1rem; gap: .25rem 1rem; font-size: .625rem; }
+    .intro-footer nav { gap: .25rem 1rem; }
+    .intro-footer .intro-signature { font-size: .76rem; }
 }

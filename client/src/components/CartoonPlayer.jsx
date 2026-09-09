@@ -71,6 +71,6 @@ export default function CartoonPlayer({ active, onClose, onChatStateChange }) {
             isMuted={muted} onMuteToggle={() => setMuted(value => !value)} playedSeconds={time} loadedSeconds={loaded} duration={duration}
             onSeek={seek} onSkipForward={() => seek(time + 10)} onSkipBackward={() => seek(time - 10)}
             isHost sessionMode="sync" isFullscreen onToggleFullscreen={onClose} />
-        {chatOpen && <CartoonChat onClose={() => setChatOpen(false)} />}
+        <CartoonChat key={`${cartoon.item}/${cartoon.file}`} cartoon={cartoon} open={chatOpen} onClose={() => setChatOpen(false)} />
     </section>;
 }

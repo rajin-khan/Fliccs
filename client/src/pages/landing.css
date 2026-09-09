@@ -111,7 +111,8 @@
 .ticket-slot { width: 100%; max-width: 360px; justify-self: center; }
 .ticket-slot .ticket-trigger { width: 100%; }
 .ticket-flight-float { width: 100%; height: 100%; transform-style: preserve-3d; }
-.cinema-logo { left: clamp(2rem, 5vw, 4.5rem); transform: none; }
+.cinema-logo { left: clamp(2rem, 5vw, 4.5rem); transform: none; transition: left 350ms, opacity 350ms; }
+.ticket-cinema.chat-open .cinema-logo { left: 24px; }
 .cartoon-player { position: absolute; inset: 0; background: black; opacity: 0; visibility: hidden; transition: opacity 500ms; }
 .cartoon-player:fullscreen { inset: 0; opacity: 1; }
 .cartoon-player video { width: 100%; height: 100%; object-fit: contain; }
@@ -155,7 +156,13 @@
 .cartoon-player.has-chat > .cartoon-status { left: 0; right: var(--chat-width); width: auto; transform: none; text-align: center; }
 .cartoon-player.has-chat > .cartoon-caption { max-width: calc(100% - var(--chat-width) - 8rem); }
 .cartoon-player.has-chat > .cartoon-navigation { left: 0; right: var(--chat-width); width: calc(100% - var(--chat-width)); }
-.cartoon-chat { position: absolute; z-index: 12; top: 0; right: 0; bottom: 0; width: var(--chat-width, min(360px, 34vw)); display: flex; flex-direction: column; min-height: 0; background: #05050d; border-left: 1px solid #ffffff1a; color: white; font-family: 'Barlow Condensed', sans-serif; }
+.cartoon-player > video,
+.cartoon-player > .cartoon-status,
+.cartoon-player > .cartoon-caption,
+.cartoon-player > .cartoon-navigation,
+.cartoon-player > .absolute { transition: width 350ms cubic-bezier(.16, 1, .3, 1), right 350ms cubic-bezier(.16, 1, .3, 1), left 350ms cubic-bezier(.16, 1, .3, 1), max-width 350ms cubic-bezier(.16, 1, .3, 1), height 350ms cubic-bezier(.16, 1, .3, 1), opacity 350ms; }
+.cartoon-chat { position: absolute; z-index: 12; top: 0; right: 0; bottom: 0; width: var(--chat-width, min(360px, 34vw)); display: flex; flex-direction: column; min-height: 0; background: #05050d; border-left: 1px solid #ffffff1a; color: white; font-family: 'Barlow Condensed', sans-serif; opacity: 0; visibility: hidden; transform: translateX(100%); transition: transform 350ms cubic-bezier(.16, 1, .3, 1), opacity 250ms ease, visibility 0s linear 350ms; }
+.cartoon-chat.is-open { opacity: 1; visibility: visible; transform: translateX(0); transition-delay: 0s; }
 .cartoon-chat-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; padding: .875rem 1rem; border-bottom: 1px solid #ffffff0d; background: #ffffff05; }
 .cartoon-chat-heading { display: flex; align-items: center; gap: .6rem; font-size: .75rem; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; }
 .cartoon-chat-heading svg { color: #a77bdf; font-size: .7rem; }
@@ -170,12 +177,14 @@
 .cartoon-chat-prompt-list::-webkit-scrollbar { display: none; }
 .cartoon-chat-prompt-list button { flex: 0 0 auto; padding: .55rem .8rem; border: 1px solid #a77bdf40; border-radius: 999px; background: #a77bdf0d; color: #d7c5ec; font-size: .75rem; white-space: nowrap; transition-property: border-color, background, color; transition-duration: 150ms; }
 .cartoon-chat-prompt-list button:hover, .cartoon-chat-prompt-list button:focus-visible { border-color: #a77bdf; background: #6435ac; color: white; outline: none; }
+.cartoon-chat-prompt-list button:disabled { cursor: wait; opacity: .45; }
 .cartoon-chat-toggle { position: absolute; z-index: 13; top: 1.25rem; right: 1.25rem; color: #ffffffb3; }
 .ticket-cinema:not(.chat-open) .cartoon-chat-toggle { top: max(1.5rem, env(safe-area-inset-top)); right: calc(var(--cinema-edge) + 44px + 1rem); }
 @media (max-width: 700px) {
     .ticket-cinema { --preview-chat-width: 100%; }
     .ticket-cinema { --cinema-edge: max(1.25rem, env(safe-area-inset-right)); }
     .ticket-cinema.chat-open .cinema-close { right: var(--cinema-edge); }
+    .ticket-cinema.chat-open .cinema-logo { left: 1.25rem; }
     .cartoon-player.has-chat { --chat-width: 100%; }
     .cartoon-player.has-chat > video,
     .cartoon-player.has-chat > .cartoon-status,
@@ -185,6 +194,7 @@
     .cartoon-player.has-chat > .cartoon-status { right: 0; height: auto; }
     .cartoon-player.has-chat > .cartoon-caption { max-width: calc(100% - 8rem); }
     .cartoon-chat { top: auto; width: 100%; height: 38%; border-top: 1px solid #ffffff1a; border-left: 0; }
+    .cartoon-chat:not(.is-open) { transform: translateY(100%); transition-delay: 0s, 0s, 350ms; }
     .cartoon-chat-toggle { top: auto; bottom: 1.25rem; right: 1.25rem; }
     .cartoon-navigation { inset: 0; padding-inline: 12px; }
 }

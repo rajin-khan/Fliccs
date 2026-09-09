@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { FaComments } from 'react-icons/fa';
 
-function ChatMessages({ messages, selfId }) {
+function ChatMessages({ messages, selfId, typing }) {
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
-    }, [messages]);
+    }, [messages, typing]);
 
     if (messages.length === 0) {
         return (
@@ -54,6 +54,23 @@ function ChatMessages({ messages, selfId }) {
                     </div>
                 );
             })}
+            {typing && (
+                <div className="flex items-end gap-2.5 justify-start animate-fade-in" role="status" aria-label={`${typing.nickname} is typing`}>
+                    <img
+                        src={typing.avatarSrc}
+                        alt={typing.nickname}
+                        className="w-6 h-6 rounded-lg opacity-60 shrink-0"
+                    />
+                    <div className="flex flex-col items-start">
+                        <span className="text-[10px] text-white/30 ml-1 mb-1">{typing.nickname}</span>
+                        <div className="flex items-center gap-1 px-3.5 py-3 bg-white/[0.06] border border-white/5 rounded-2xl rounded-bl-md" aria-hidden="true">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce [animation-delay:-.24s]" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce [animation-delay:-.12s]" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-bounce" />
+                        </div>
+                    </div>
+                </div>
+            )}
             <div ref={messagesEndRef} />
         </div>
     );

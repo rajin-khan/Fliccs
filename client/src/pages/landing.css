@@ -24,10 +24,10 @@
 .intro-button { display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; min-height: 48px; margin-top: 2rem; background: #6435ac; color: white; font-size: .875rem; font-weight: 500; letter-spacing: .15em; border: 1px solid rgb(167 123 223 / .4); border-radius: 999px; box-shadow: 0 8px 32px rgb(100 53 172 / .2); transition: background .2s, box-shadow .2s; }
 .intro-button:hover { background: #7645bf; box-shadow: 0 8px 36px rgb(100 53 172 / .35); }
 .intro-note { margin-top: 1rem; font-size: .9375rem; color: var(--intro-purple); }
-.intro-ticket { mask-image: radial-gradient(circle at 0 53px, transparent 8px, black 8.5px), radial-gradient(circle at 100% 53px, transparent 8px, black 8.5px), radial-gradient(circle at 0 calc(100% - 74px), transparent 8px, black 8.5px), radial-gradient(circle at 100% calc(100% - 74px), transparent 8px, black 8.5px); mask-composite: intersect; background: linear-gradient(145deg, #eee7f5, #d7c6e7); color: #30203e; border: 1px solid #ffffff50; border-radius: 2rem; box-shadow: 0 28px 90px -35px rgb(100 53 172 / .5); padding: 1.5rem 1.75rem 0; transform: rotate(2deg); max-width: 360px; width: 100%; justify-self: center; }
+.intro-ticket { mask-image: radial-gradient(circle at 0 53px, transparent 8px, black 8.5px), radial-gradient(circle at 100% 53px, transparent 8px, black 8.5px), radial-gradient(circle at 0 calc(100% - 74px), transparent 8px, black 8.5px), radial-gradient(circle at 100% calc(100% - 74px), transparent 8px, black 8.5px); mask-composite: intersect; background: linear-gradient(145deg, #eee7f5, #d7c6e7); color: #30203e; border: 1px solid #ffffff50; border-radius: 2rem; box-shadow: 0 28px 90px -35px rgb(100 53 172 / .5); padding: 1.5rem 1.75rem 0; max-width: 360px; width: 100%; justify-self: center; }
 .ticket-top { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: 1rem; line-height: 12px; border-bottom: 1px solid #25202c40; font-size: .6875rem; text-transform: uppercase; letter-spacing: .12em; }
 .intro-ticket img { width: 64px; height: 64px; object-fit: contain; margin: 2.5rem auto 1.5rem; }
-.intro-ticket > p { font-size: clamp(3rem, 5.5vw, 5rem); text-transform: uppercase; text-align: center; line-height: .95; font-weight: 500; letter-spacing: -.03em; margin-bottom: 2.5rem; }
+.ticket-title { font-size: clamp(3rem, 5.5vw, 5rem); text-transform: uppercase; text-align: center; line-height: .95; font-weight: 500; letter-spacing: -.03em; margin-bottom: 2.5rem; }
 .ticket-stub { position: relative; display: flex; justify-content: space-between; align-items: end; gap: 1rem; border-top: 1px dashed #25202c60; height: 74px; padding-block: 1.25rem; font-size: .8125rem; line-height: 1.3; }
 .ticket-mark { font-size: 2rem; line-height: 1; font-style: italic; font-weight: 500; letter-spacing: -.06em; color: #6435ac; }
 .intro-modes { border-top: 1px solid #ffffff26; padding-block: 2.5rem 4rem; }
@@ -61,12 +61,52 @@
     .intro-hero { grid-template-columns: 1fr; gap: 3.5rem; padding-top: 8rem; }
     .intro-hero h1 { font-size: clamp(3.25rem, 12vw, 5rem); }
     .intro-description { max-width: 28rem; }
-    .intro-ticket { width: min(100% - 1.5rem, 320px); transform: rotate(2deg); }
-    .intro-ticket > p { font-size: 4rem; }
+    .intro-ticket { width: 100%; }
+    .ticket-title { font-size: 4rem; }
     .intro-mode-grid { grid-template-columns: 1fr; gap: 1rem; }
     .intro-room-preview { grid-template-columns: 1fr; gap: 2rem; }
     .intro-modes { padding-block: 3rem; }
     .intro-footer-pill { padding-inline: 1rem; gap: .25rem 1rem; font-size: .625rem; }
     .intro-footer nav { gap: .25rem 1rem; }
     .intro-footer .intro-signature { font-size: .76rem; }
+}
+
+.ticket-trigger { --tilt-x: 0deg; --tilt-y: 0deg; display: block; width: 100%; max-width: 360px; justify-self: center; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; touch-action: manipulation; transform: perspective(860px) rotateX(calc(2.4deg + var(--tilt-x))) rotateY(calc(-5.6deg + var(--tilt-y))) rotateZ(2deg); transition: transform 520ms cubic-bezier(.16, 1, .3, 1); }
+.ticket-trigger:focus-visible { outline: 2px solid #c9a5fa; outline-offset: 12px; border-radius: 2rem; }
+.ticket-float { display: block; transform-style: preserve-3d; animation: ticket-float 7s ease-in-out infinite; filter: drop-shadow(0 22px 18px #0007); }
+.ticket-face { display: block; position: relative; width: 100%; max-width: none; height: 100%; box-shadow: inset 0 2px 1px #fff9, inset -3px -4px 3px #6c4a8540; }
+.ticket-face::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(ellipse at var(--glint-x, 25%) 0%, #fff8, transparent 65%); opacity: .3; mix-blend-mode: screen; transition: opacity .3s; }
+.ticket-title { display: block; }
+@media (hover: hover) {
+    .ticket-trigger:hover { transform: perspective(860px) translateY(-5px) rotateX(calc(2.4deg + var(--tilt-x))) rotateY(calc(-5.6deg + var(--tilt-y))) rotateZ(2deg) scale(1.055); }
+    .ticket-trigger:hover .ticket-face::after { opacity: .7; }
+}
+@keyframes ticket-float {
+    0%, 100% { transform: translateY(0) rotateX(0) rotateY(0); }
+    24% { transform: translateY(-8.5px) rotateX(2.25deg) rotateY(-3.35deg) rotateZ(-.64deg); }
+    52% { transform: translateY(-5.5px) rotateX(-.45deg) rotateY(3deg) rotateZ(.34deg); }
+    76% { transform: translateY(-10.8px) rotateX(1.55deg) rotateY(-1.75deg) rotateZ(-.48deg); }
+}
+.ticket-cinema { position: fixed; inset: 0; margin: 0; padding: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; border: 0; overflow: hidden; background: transparent; color: white; font-family: 'Barlow Condensed', sans-serif; }
+.ticket-cinema::backdrop { background: #0002; }
+.ticket-cinema.is-playing { background: #000; }
+.ticket-flight { position: absolute; transform-style: preserve-3d; pointer-events: none; }
+.ticket-flight .ticket-face, .ticket-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.ticket-back { display: block; border-radius: 2rem; background: #000; transform: rotateY(180deg); box-shadow: inset 0 0 0 1px #ffffff18; }
+.is-playing .ticket-flight { visibility: hidden; }
+.cinema-logo { position: absolute; z-index: 2; top: max(2rem, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); opacity: 0; }
+.is-playing .cinema-logo { animation: cinema-reveal 900ms ease-out 200ms both; }
+.cinema-close { position: absolute; z-index: 3; top: max(1.5rem, env(safe-area-inset-top)); right: max(1.5rem, env(safe-area-inset-right)); width: 44px; height: 44px; border: 1px solid #ffffff26; border-radius: 50%; background: #0008; color: #fff9; font: 300 28px/1 sans-serif; transition: color 150ms, background 150ms; }
+.cinema-close:hover, .cinema-close:focus-visible { color: white; background: #24202d; outline: 2px solid #a77bdf; outline-offset: 3px; }
+.cinema-film { position: absolute; inset: 6rem 0 0; display: grid; place-items: center; overflow: hidden; opacity: 0; animation: cinema-reveal 1.5s ease-out 1.3s forwards; perspective: 1000px; }
+.cinema-sculpture { width: min(52vw, 360px); aspect-ratio: 1; position: relative; transform-style: preserve-3d; animation: cinema-orbit 18s ease-in-out infinite alternate; }
+.cinema-sculpture span { position: absolute; inset: calc(var(--ring) * 5%); border: 1px solid #be8aff; border-radius: 28%; box-shadow: 0 0 18px #8a43d944, inset 0 0 18px #8a43d922; transform: rotateZ(calc(var(--ring) * 14deg)) translateZ(calc(var(--ring) * 12px)); animation: cinema-breathe 5s ease-in-out calc(var(--ring) * -.4s) infinite alternate; }
+@keyframes cinema-reveal { to { opacity: 1; } }
+@keyframes cinema-orbit { from { transform: rotateX(58deg) rotateY(-18deg) rotateZ(-30deg); } to { transform: rotateX(-24deg) rotateY(35deg) rotateZ(160deg); } }
+@keyframes cinema-breathe { from { opacity: .25; scale: .85; } to { opacity: 1; scale: 1; } }
+@media (max-width: 700px) { .ticket-trigger { width: min(100% - 1.5rem, 320px); } }
+@media (prefers-reduced-motion: reduce) {
+    .ticket-trigger, .ticket-trigger:hover { transform: rotate(2deg); transition: none; }
+    .ticket-float, .cinema-sculpture, .cinema-sculpture span { animation: none; }
+    .is-playing .cinema-logo, .cinema-film { animation-duration: 1ms; animation-delay: 0ms; }
 }

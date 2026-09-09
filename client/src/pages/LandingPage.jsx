@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { FaComments, FaLink, FaExpand } from 'react-icons/fa';
 import SiteHeader from '../components/Layout/SiteHeader';
 import './landing.css';
+import LandingTicket from '../components/LandingTicket';
 
 export default function LandingPage() {
     return (
@@ -17,12 +18,7 @@ export default function LandingPage() {
                         <Link to="/watch" className="intro-button">START WATCHING</Link>
                         <p className="intro-note">Live chat. Private rooms. No account needed.</p>
                     </div>
-                    <div className="intro-ticket" aria-hidden="true">
-                        <div className="ticket-top"><span>Fliccs picture club</span><span>Est. 2025</span></div>
-                        <img src="/fliccs-icon.png" alt="" width="96" height="96" />
-                        <p>Saved you<br />a seat.</p>
-                        <div className="ticket-stub"><span>Bring a film.<br />Bring your people.</span><span className="ticket-mark">fliccs</span></div>
-                    </div>
+                    <LandingTicket />
                 </section>
 
                 <section id="how-it-works" className="intro-modes" aria-labelledby="modes-title">

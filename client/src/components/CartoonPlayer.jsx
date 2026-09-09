@@ -6,7 +6,7 @@ import { cartoons } from '../data/cartoons';
 
 export default function CartoonPlayer({ active, onClose }) {
     const video = useRef(null);
-    const [index, setIndex] = useState(0);
+    const [index, setIndex] = useState(() => Math.floor(Math.random() * cartoons.length));
     const [playing, setPlaying] = useState(false);
     const [muted, setMuted] = useState(true);
     const [volume, setVolume] = useState(1);

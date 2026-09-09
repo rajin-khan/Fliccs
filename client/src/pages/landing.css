@@ -96,7 +96,7 @@
 .is-playing .ticket-flight { visibility: hidden; }
 .cinema-logo { position: absolute; z-index: 2; top: max(2rem, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); opacity: 0; }
 .is-playing .cinema-logo { animation: cinema-reveal 900ms ease-out 200ms both; }
-.cinema-close { position: absolute; z-index: 3; top: max(1.5rem, env(safe-area-inset-top)); right: max(1.5rem, env(safe-area-inset-right)); width: 44px; height: 44px; border: 1px solid #ffffff26; border-radius: 50%; background: #0008; color: #fff9; font: 300 28px/1 sans-serif; transition: color 150ms, background 150ms; }
+.cinema-close { display: grid; place-items: center; padding: 0; position: absolute; z-index: 3; top: max(1.5rem, env(safe-area-inset-top)); right: max(1.5rem, env(safe-area-inset-right)); width: 44px; height: 44px; border: 1px solid #ffffff26; border-radius: 50%; background: #0008; color: #fff9; font: 300 28px/1 sans-serif; transition: color 150ms, background 150ms; }
 .cinema-close:hover, .cinema-close:focus-visible { color: white; background: #24202d; outline: 2px solid #a77bdf; outline-offset: 3px; }
 .cinema-film { position: absolute; inset: 6rem 0 0; display: grid; place-items: center; overflow: hidden; opacity: 0; animation: cinema-reveal 1.5s ease-out 1.3s forwards; perspective: 1000px; }
 .cinema-sculpture { width: min(52vw, 360px); aspect-ratio: 1; position: relative; transform-style: preserve-3d; animation: cinema-orbit 18s ease-in-out infinite alternate; }
@@ -110,3 +110,5 @@
     .ticket-float, .cinema-sculpture, .cinema-sculpture span { animation: none; }
     .is-playing .cinema-logo, .cinema-film { animation-duration: 1ms; animation-delay: 0ms; }
 }
+
+.cinema-close svg { display: block; width: 14px; height: 14px; }

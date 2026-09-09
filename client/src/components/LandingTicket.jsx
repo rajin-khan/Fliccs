@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { FaTimes } from 'react-icons/fa';
 import BrandLogo from './BrandLogo';
 
 function TicketFace() {
@@ -15,6 +16,8 @@ export default function LandingTicket() {
     const dialog = useRef(null);
     const card = useRef(null);
     const frame = useRef(null);
+    const flight = useRef(null);
+    const closing = useRef(false);
     const [origin, setOrigin] = useState(null);
     const [playing, setPlaying] = useState(false);
 
@@ -37,10 +40,13 @@ export default function LandingTicket() {
             { transform: `perspective(1200px) translate(${dx}px, ${dy}px) rotateY(180deg) rotateZ(90deg) scale(1.08)`, offset: .58 },
             { transform: `perspective(1200px) translate(${dx}px, ${dy}px) rotateY(180deg) rotateZ(90deg) scale(${scale})`, offset: 1 },
         ], { duration: reduced ? 180 : 1700, easing: 'cubic-bezier(.65, 0, .2, 1)', fill: 'forwards' });
+        flight.current = animation;
+        closing.current = false;
         let cancelled = false;
-        animation.finished.then(() => { if (!cancelled) setPlaying(true); }).catch(() => {});
+        animation.finished.then(() => { if (!cancelled && !closing.current) setPlaying(true); }).catch(() => {});
         return () => {
             cancelled = true;
+            flight.current = null;
             animation.cancel();
             modal.close();
             document.body.style.overflow = previousOverflow;
@@ -68,10 +74,16 @@ export default function LandingTicket() {
         });
     }
 
-    function close() {
-        setOrigin(null);
+    async function close() {
+        const animation = flight.current;
+        if (!animation || closing.current) return;
+        closing.current = true;
         setPlaying(false);
-        trigger.current?.focus();
+        animation.reverse();
+        try {
+            await animation.finished;
+            setOrigin(null);
+        } catch { /* Unmount cancels the flight. */ }
     }
 
     return <>
@@ -80,13 +92,13 @@ export default function LandingTicket() {
             onClick={() => { setOrigin(trigger.current.getBoundingClientRect()); resetTilt(); }}>
             <span className="ticket-float"><TicketFace /></span>
         </button>
-        <dialog ref={dialog} className={`ticket-cinema${playing ? ' is-playing' : ''}`} aria-label="Fliccs preview" onCancel={close} onClose={() => { if (origin) close(); }}>
+        <dialog ref={dialog} className={`ticket-cinema${playing ? ' is-playing' : ''}`} aria-label="Fliccs preview" onCancel={event => { event.preventDefault(); close(); }}>
             {origin && <>
                 <div ref={card} className="ticket-flight" aria-hidden="true" style={{ left: origin.left, top: origin.top, width: origin.width, height: origin.height }}>
                     <TicketFace /><span className="ticket-back" />
                 </div>
                 <div className="cinema-logo"><BrandLogo size="md" /></div>
-                <button className="cinema-close" onClick={close} aria-label="Close preview" autoFocus>×</button>
+                <button className="cinema-close" onClick={close} aria-label="Close preview" autoFocus><FaTimes aria-hidden="true" /></button>
                 {playing && <div className="cinema-film" role="img" aria-label="Animated purple light sculpture">
                     <div className="cinema-sculpture">{Array.from({ length: 7 }, (_, i) => <span key={i} style={{ '--ring': i }} />)}</div>
                 </div>}

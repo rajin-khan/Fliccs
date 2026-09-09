@@ -6,7 +6,9 @@ import { cartoons } from '../data/cartoons';
 
 export default function CartoonPlayer({ active, onClose }) {
     const video = useRef(null);
-    const [index, setIndex] = useState(() => Math.floor(Math.random() * cartoons.length));
+    const currentIndex = useRef(Math.floor(Math.random() * cartoons.length));
+    const previousIndices = useRef([]);
+    const [index, setIndex] = useState(currentIndex.current);
     const [playing, setPlaying] = useState(false);
     const [muted, setMuted] = useState(true);
     const [volume, setVolume] = useState(1);
@@ -25,8 +27,18 @@ export default function CartoonPlayer({ active, onClose }) {
         return () => clearTimeout(timeout);
     }, [status, index]);
     function change(delta) {
+        let nextIndex;
+        if (delta > 0) {
+            do nextIndex = Math.floor(Math.random() * cartoons.length);
+            while (nextIndex === currentIndex.current && cartoons.length > 1);
+            previousIndices.current = [...previousIndices.current, currentIndex.current].slice(-3);
+        } else {
+            nextIndex = previousIndices.current.pop();
+            if (nextIndex === undefined) return;
+        }
+        currentIndex.current = nextIndex;
         video.current.pause();
-        setIndex(value => (value + delta + cartoons.length) % cartoons.length);
+        setIndex(nextIndex);
         setTime(0); setDuration(0); setLoaded(0); setPlaying(false); setStatus('Loading cartoon…');
     }
     function play() {

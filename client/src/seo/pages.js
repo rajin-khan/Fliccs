@@ -1,6 +1,7 @@
 export const origin = 'https://fliccs.com';
 export const pages = {
   '/': { title: 'Fliccs — Watch Videos Together Online', description: 'Watch local videos with friends on Fliccs. Sync playback or stream from one host, with live chat and password-protected rooms. No account needed.' },
+  '/landing': { title: 'Watch together, wherever you are | Fliccs', description: 'Make time for a watch party. Stream a local video to friends or sync the same file, with room chat and no account needed.' },
   '/pricing': { title: 'Plans & Pricing | Fliccs', description: 'Explore Fliccs Sync and Stream modes and planned Premium features for watching videos together with friends.' },
   '/privacy': { title: 'Privacy Policy | Fliccs', description: 'Learn how Fliccs handles session data, local storage, and privacy when you watch videos with friends.' },
   '/terms-and-conditions': { title: 'Terms of Service | Fliccs', description: 'Read the terms for using Fliccs, including user responsibilities and rules for sharing video content.' },

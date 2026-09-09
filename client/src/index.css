@@ -25,6 +25,16 @@ body {
     font-family: 'Barlow Condensed', sans-serif;
 }
 
+.site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem clamp(2rem, 5vw, 4.5rem);
+}
+
 @keyframes shine {
     0% {
         background-position: 200% center;

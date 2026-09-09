@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FaComments, FaTimes } from 'react-icons/fa';
+import ChatMessages from './Chat/Messages';
 
 const prompts = [
     ['What is Fliccs?', 'A tiny private room for watching a film together.'],
@@ -12,15 +13,15 @@ const randomSeed = () => `cartoon-guest-${Math.floor(Math.random() * 100000)}`;
 
 export default function CartoonChat({ onClose }) {
     const [messages, setMessages] = useState([
-        { id: 'welcome', author: 'Tessro', text: 'I picked this one for you. Ask me anything.', tessro: true },
+        { id: 'welcome', senderId: 'fliccs', nickname: 'Fliccs', text: 'I picked this one for you. Ask me anything.', avatarSrc: '/fliccs-icon.png', timestamp: 'welcome' },
     ]);
     const [seed] = useState(randomSeed);
 
     function ask(question, answer) {
         setMessages((current) => [
             ...current,
-            { id: `${question}-${Date.now()}`, author: 'You', text: question, seed },
-            { id: `${question}-answer-${Date.now()}`, author: 'Tessro', text: answer, tessro: true },
+            { id: `${question}-${Date.now()}`, senderId: 'cartoon-you', nickname: 'You', text: question, avatarSrc: `https://api.dicebear.com/9.x/avataaars-neutral/svg?seed=${seed}`, timestamp: `${Date.now()}-question` },
+            { id: `${question}-answer-${Date.now()}`, senderId: 'fliccs', nickname: 'Fliccs', text: answer, avatarSrc: '/fliccs-icon.png', timestamp: `${Date.now()}-answer` },
         ]);
     }
 
@@ -31,19 +32,10 @@ export default function CartoonChat({ onClose }) {
                 <button type="button" onClick={onClose} aria-label="Hide chat" title="Hide chat"><FaTimes aria-hidden="true" /></button>
             </div>
             <div className="cartoon-chat-messages" aria-live="polite">
-                {messages.map((message) => (
-                    <div className={`cartoon-chat-message ${message.tessro ? 'is-tessro' : 'is-self'}`} key={message.id}>
-                        {message.tessro && <img src="/fliccs-icon.png" alt="Tessro" />}
-                        <div className="cartoon-chat-bubble-wrap">
-                            <span>{message.author}</span>
-                            <p>{message.text}</p>
-                        </div>
-                        {!message.tessro && <img src={`https://api.dicebear.com/9.x/avataaars-neutral/svg?seed=${message.seed}`} alt="You" />}
-                    </div>
-                ))}
+                <ChatMessages messages={messages} selfId="cartoon-you" />
             </div>
-            <div className="cartoon-chat-prompts" aria-label="Ask Tessro">
-                <p>Ask Tessro</p>
+            <div className="cartoon-chat-prompts" aria-label="Ask Fliccs">
+                <p>Ask Fliccs</p>
                 <div className="cartoon-chat-prompt-list">
                     {prompts.map(([question, answer]) => <button type="button" key={question} onClick={() => ask(question, answer)}>{question}</button>)}
                 </div>

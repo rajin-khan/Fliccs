@@ -87,7 +87,7 @@
     52% { transform: translateY(-5.5px) rotateX(-.45deg) rotateY(3deg) rotateZ(.34deg); }
     76% { transform: translateY(-10.8px) rotateX(1.55deg) rotateY(-1.75deg) rotateZ(-.48deg); }
 }
-.ticket-cinema { position: fixed; inset: 0; margin: 0; padding: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; border: 0; overflow: hidden; background: transparent; color: white; font-family: 'Barlow Condensed', sans-serif; }
+.ticket-cinema { --preview-chat-width: min(360px, 34vw); position: fixed; inset: 0; margin: 0; padding: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; border: 0; overflow: clip; background: transparent; color: white; font-family: 'Barlow Condensed', sans-serif; }
 .ticket-cinema::backdrop { background: #0002; }
 .ticket-cinema.is-playing { background: #000; }
 .ticket-flight { position: absolute; transform-style: preserve-3d; pointer-events: none; }
@@ -98,6 +98,7 @@
 
 .cinema-close { display: grid; place-items: center; padding: 0; position: absolute; z-index: 3; top: max(1.5rem, env(safe-area-inset-top)); right: max(1.5rem, env(safe-area-inset-right)); width: 44px; height: 44px; border: 1px solid #ffffff26; border-radius: 50%; background: #0008; color: #fff9; font: 300 28px/1 sans-serif; transition: color 150ms, background 150ms; }
 .cinema-close:hover, .cinema-close:focus-visible { color: white; background: #24202d; outline: 2px solid #a77bdf; outline-offset: 3px; }
+.ticket-cinema.chat-open .cinema-close { right: calc(var(--preview-chat-width) + 1.25rem); }
 @keyframes cinema-reveal { to { opacity: 1; } }
 @media (max-width: 700px) { .ticket-trigger { width: min(100% - 1.5rem, 320px); } }
 @media (prefers-reduced-motion: reduce) {
@@ -144,28 +145,24 @@
 
 @media (min-width: 701px) { .ticket-slot { position: relative; left: clamp(-24px, -2vw, -16px); } }
 
+.cartoon-player.has-chat { --chat-width: var(--preview-chat-width); }
 .cartoon-player.has-chat > video,
 .cartoon-player.has-chat > .cartoon-status,
 .cartoon-player.has-chat > .cartoon-caption,
 .cartoon-player.has-chat > .cartoon-navigation,
-.cartoon-player.has-chat > .absolute { width: calc(100% - min(360px, 34vw)); right: min(360px, 34vw); }
-.cartoon-chat { position: absolute; z-index: 12; top: 0; right: 0; bottom: 0; width: min(360px, 34vw); display: flex; flex-direction: column; min-height: 0; background: #05050d; border-left: 1px solid #ffffff1a; color: white; font-family: 'Barlow Condensed', sans-serif; }
+.cartoon-player.has-chat > .absolute { width: calc(100% - var(--chat-width)); right: var(--chat-width); }
+.cartoon-player.has-chat > .cartoon-status { left: 0; right: var(--chat-width); width: auto; transform: none; text-align: center; }
+.cartoon-player.has-chat > .cartoon-caption { max-width: calc(100% - var(--chat-width) - 8rem); }
+.cartoon-player.has-chat > .cartoon-navigation { justify-content: flex-end; }
+.cartoon-chat { position: absolute; z-index: 12; top: 0; right: 0; bottom: 0; width: var(--chat-width, min(360px, 34vw)); display: flex; flex-direction: column; min-height: 0; background: #05050d; border-left: 1px solid #ffffff1a; color: white; font-family: 'Barlow Condensed', sans-serif; }
 .cartoon-chat-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; padding: .875rem 1rem; border-bottom: 1px solid #ffffff0d; background: #ffffff05; }
 .cartoon-chat-heading { display: flex; align-items: center; gap: .6rem; font-size: .75rem; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; }
 .cartoon-chat-heading svg { color: #a77bdf; font-size: .7rem; }
 .cartoon-chat-header button, .cartoon-chat-toggle { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border: 1px solid #ffffff1a; border-radius: 999px; background: #0008; color: #ffffff80; transition-property: color, background, transform; transition-duration: 150ms; }
 .cartoon-chat-header button:hover, .cartoon-chat-toggle:hover { color: white; background: #6435ac; }
 .cartoon-chat-header button:active, .cartoon-chat-toggle:active { transform: scale(.96); }
-.cartoon-chat-messages { display: flex; flex: 1; flex-direction: column; gap: .875rem; min-height: 0; overflow-y: auto; padding: 1rem; scrollbar-width: none; }
-.cartoon-chat-messages::-webkit-scrollbar { display: none; }
-.cartoon-chat-message { display: flex; align-items: flex-end; gap: .55rem; }
-.cartoon-chat-message.is-self { justify-content: flex-end; }
-.cartoon-chat-message img { width: 1.5rem; height: 1.5rem; flex: 0 0 auto; border-radius: .5rem; object-fit: cover; outline: 1px solid #ffffff1a; }
-.cartoon-chat-bubble-wrap { display: flex; flex-direction: column; max-width: 80%; }
-.is-self .cartoon-chat-bubble-wrap { align-items: flex-end; }
-.cartoon-chat-bubble-wrap > span { margin: 0 0 .25rem .25rem; color: #ffffff4d; font-size: .625rem; }
-.cartoon-chat-bubble-wrap p { padding: .55rem .75rem; border: 1px solid #ffffff0d; border-radius: 1rem 1rem 1rem .25rem; background: #ffffff0a; color: #d5d0da; font-size: .875rem; line-height: 1.35; }
-.is-self .cartoon-chat-bubble-wrap p { border-color: #a77bdf55; border-radius: 1rem 1rem .25rem 1rem; background: #6435ac; color: white; }
+.cartoon-chat-messages { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; }
+.cartoon-chat-messages > .h-full { min-height: 0; }
 .cartoon-chat-prompts { flex-shrink: 0; padding: .75rem 0 max(.75rem, env(safe-area-inset-bottom)); border-top: 1px solid #ffffff0d; background: #ffffff03; }
 .cartoon-chat-prompts > p { padding: 0 1rem .55rem; color: #ffffff4d; font-size: .625rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
 .cartoon-chat-prompt-list { display: flex; gap: .5rem; overflow-x: auto; padding: 0 1rem .25rem; scrollbar-width: none; }
@@ -174,11 +171,16 @@
 .cartoon-chat-prompt-list button:hover, .cartoon-chat-prompt-list button:focus-visible { border-color: #a77bdf; background: #6435ac; color: white; outline: none; }
 .cartoon-chat-toggle { position: absolute; z-index: 13; top: 1.25rem; right: 1.25rem; color: #ffffffb3; }
 @media (max-width: 700px) {
+    .ticket-cinema { --preview-chat-width: 100%; }
+    .ticket-cinema.chat-open .cinema-close { right: max(1.25rem, env(safe-area-inset-right)); }
+    .cartoon-player.has-chat { --chat-width: 100%; }
     .cartoon-player.has-chat > video,
     .cartoon-player.has-chat > .cartoon-status,
     .cartoon-player.has-chat > .cartoon-caption,
     .cartoon-player.has-chat > .cartoon-navigation,
     .cartoon-player.has-chat > .absolute { width: 100%; right: 0; height: 62%; }
+    .cartoon-player.has-chat > .cartoon-status { right: 0; height: auto; }
+    .cartoon-player.has-chat > .cartoon-caption { max-width: calc(100% - 8rem); }
     .cartoon-chat { top: auto; width: 100%; height: 38%; border-top: 1px solid #ffffff1a; border-left: 0; }
     .cartoon-chat-toggle { top: auto; bottom: 1.25rem; right: 1.25rem; }
 }

@@ -23,6 +23,7 @@ export default function LandingTicket() {
     const shades = useRef([]);
     const idle = useRef(null);
     const [controlsVisible, setControlsVisible] = useState(true);
+    const [chatOpen, setChatOpen] = useState(true);
     const [origin, setOrigin] = useState(null);
     const [playing, setPlaying] = useState(false);
 
@@ -44,6 +45,10 @@ export default function LandingTicket() {
     useEffect(() => {
         if (playing) revealControls();
     }, [playing]);
+
+    useLayoutEffect(() => {
+        if (origin && dialog.current) dialog.current.scrollTop = 0;
+    }, [origin, chatOpen]);
 
     useLayoutEffect(() => {
         if (!origin) return;
@@ -145,14 +150,14 @@ export default function LandingTicket() {
             <span className="ticket-float" style={origin ? { animationPlayState: 'paused', transform: origin.floatTransform } : undefined}><TicketFace /></span>
         </button>
         </div>
-        <dialog ref={dialog} className={`ticket-cinema${playing ? ' is-playing' : ''}${controlsVisible ? ' controls-visible' : ''}`} onPointerMove={revealControls} onPointerDown={revealControls} onKeyDown={revealControls} aria-label="Fliccs preview" onCancel={event => { event.preventDefault(); close(); }}>
+        <dialog ref={dialog} className={`ticket-cinema${playing ? ' is-playing' : ''}${controlsVisible ? ' controls-visible' : ''}${chatOpen ? ' chat-open' : ''}`} onPointerMove={revealControls} onPointerDown={revealControls} onKeyDown={revealControls} aria-label="Fliccs preview" onCancel={event => { event.preventDefault(); close(); }}>
             {origin && <>
                 <div ref={card} className="ticket-flight" aria-hidden="true" style={{ left: origin.left, top: origin.top, width: origin.width, height: origin.height, '--glint-x': origin.glint }}>
                     <div className="ticket-flight-float" style={{ transform: origin.floatTransform }}><TicketFace /><span className="ticket-back" /></div>
                 </div>
                 <div className="cinema-logo"><BrandLogo size="md" /></div>
                 <button className="cinema-close" onClick={() => close()} aria-label="Close preview" autoFocus><FaTimes aria-hidden="true" /></button>
-                <CartoonPlayer active={playing} onClose={() => close()} />
+                <CartoonPlayer active={playing} onClose={() => close()} onChatStateChange={setChatOpen} />
             </>}
         </dialog>
     </>;

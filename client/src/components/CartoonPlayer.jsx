@@ -5,7 +5,7 @@ import CartoonChat from './CartoonChat';
 
 import { cartoons } from '../data/cartoons';
 
-export default function CartoonPlayer({ active, onClose }) {
+export default function CartoonPlayer({ active, onClose, onChatStateChange }) {
     const video = useRef(null);
     const currentIndex = useRef(Math.floor(Math.random() * cartoons.length));
     const previousIndices = useRef([]);
@@ -19,6 +19,7 @@ export default function CartoonPlayer({ active, onClose }) {
     const [status, setStatus] = useState('Loading cartoon…');
     const [chatOpen, setChatOpen] = useState(true);
     const cartoon = cartoons[index];
+    useEffect(() => { onChatStateChange?.(chatOpen); }, [chatOpen, onChatStateChange]);
     useEffect(() => {
         if (active) video.current.play().catch(error => { if (error.name !== 'AbortError') setStatus('Press play to start.'); });
         else video.current.pause();

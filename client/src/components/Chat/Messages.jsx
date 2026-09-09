@@ -32,9 +32,9 @@ function ChatMessages({ messages, selfId }) {
                         key={msg.timestamp || i}
                         className={`flex items-end gap-2.5 ${isSelf ? 'justify-end' : 'justify-start'} group animate-fade-in`}
                     >
-                        {!isSelf && (
+                        {(!isSelf || msg.avatarSrc) && (
                             <img
-                                src={`https://api.dicebear.com/9.x/avataaars-neutral/svg?seed=${msg.senderId}`}
+                                src={msg.avatarSrc || `https://api.dicebear.com/9.x/avataaars-neutral/svg?seed=${msg.senderId}`}
                                 alt={nickname}
                                 className="w-6 h-6 rounded-lg opacity-60 group-hover:opacity-100 transition-opacity shrink-0"
                                 title={nickname}

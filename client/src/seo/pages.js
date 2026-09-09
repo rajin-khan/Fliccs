@@ -16,7 +16,7 @@ export function pageMeta(pathname) { return Object.hasOwn(pages, pathname) ? pag
 export function structuredData(pathname) {
   const page = pageMeta(pathname);
   return { '@context': 'https://schema.org', '@graph': [
-    { '@type': 'WebSite', '@id': `${origin}/#website`, name: 'Fliccs', alternateName: 'Tessro', url: `${origin}/` },
+    { '@type': 'WebSite', '@id': `${origin}/#website`, name: 'Fliccs', url: `${origin}/` },
     { '@type': 'WebPage', '@id': `${origin}${pathname}#webpage`, url: `${origin}${pathname}`, name: page.title, description: page.description, isPartOf: { '@id': `${origin}/#website` } },
     ...(pathname === '/' ? [{ '@type': 'WebApplication', name: 'Fliccs', url: `${origin}/watch`, applicationCategory: 'MultimediaApplication', operatingSystem: 'Web browser', description: page.description, image: `${origin}/og/fliccs.png` }] : []),
   ] };

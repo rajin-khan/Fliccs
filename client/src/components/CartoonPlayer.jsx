@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaComments } from 'react-icons/fa';
 import PlayerControls from './VideoPlayer/PlayerControls';
+import CartoonChat from './CartoonChat';
 
 import { cartoons } from '../data/cartoons';
 
@@ -16,6 +17,7 @@ export default function CartoonPlayer({ active, onClose }) {
     const [duration, setDuration] = useState(0);
     const [loaded, setLoaded] = useState(0);
     const [status, setStatus] = useState('Loading cartoon…');
+    const [chatOpen, setChatOpen] = useState(true);
     const cartoon = cartoons[index];
     useEffect(() => {
         if (active) video.current.play().catch(error => { if (error.name !== 'AbortError') setStatus('Press play to start.'); });
@@ -47,7 +49,7 @@ export default function CartoonPlayer({ active, onClose }) {
     function seek(seconds) {
         if (Number.isFinite(video.current.duration)) video.current.currentTime = Math.max(0, Math.min(seconds, video.current.duration));
     }
-    return <section className="cartoon-player" aria-label="Classic cartoon player">
+    return <section className={`cartoon-player${chatOpen ? ' has-chat' : ''}`} aria-label="Classic cartoon player">
         <video key={cartoon.item + cartoon.file} ref={video} src={`https://archive.org/download/${cartoon.item}/${encodeURIComponent(cartoon.file)}`}
             playsInline autoPlay={active} muted={muted} preload="auto" onCanPlay={() => { setStatus(''); }}
             onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => change(1)}
@@ -62,10 +64,12 @@ export default function CartoonPlayer({ active, onClose }) {
             <button onClick={() => change(-1)} aria-label="Previous cartoon"><FaChevronLeft /></button>
             <button onClick={() => change(1)} aria-label="Next cartoon"><FaChevronRight /></button>
         </div>
+        {!chatOpen && <button type="button" className="cartoon-chat-toggle" onClick={() => setChatOpen(true)} aria-label="Show chat" title="Show chat"><FaComments /></button>}
         <PlayerControls isPlaying={playing} onPlayPause={() => playing ? video.current.pause() : play()}
             volume={volume} onVolumeChange={value => { setVolume(value); video.current.volume = value; setMuted(false); }}
             isMuted={muted} onMuteToggle={() => setMuted(value => !value)} playedSeconds={time} loadedSeconds={loaded} duration={duration}
             onSeek={seek} onSkipForward={() => seek(time + 10)} onSkipBackward={() => seek(time - 10)}
             isHost sessionMode="sync" isFullscreen onToggleFullscreen={onClose} />
+        {chatOpen && <CartoonChat onClose={() => setChatOpen(false)} />}
     </section>;
 }

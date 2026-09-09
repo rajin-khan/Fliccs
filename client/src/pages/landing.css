@@ -10,53 +10,60 @@
     --intro-purple: #a77bdf;
 }
 .intro-page::before, .intro-page::after { content: ''; position: absolute; z-index: -1; pointer-events: none; width: min(65vw, 700px); height: 650px; border-radius: 50%; filter: blur(120px); }
-.intro-page::before { top: -180px; left: -160px; background: rgb(100 53 172 / .22); }
-.intro-page::after { top: 35%; right: -200px; background: rgb(76 46 144 / .2); }
+.intro-page::before { top: -180px; left: -160px; background: rgb(100 53 172 / .22); animation: intro-haze 12s ease-in-out infinite alternate; }
+.intro-page::after { top: 35%; right: -200px; background: rgb(76 46 144 / .2); animation: intro-haze 16s ease-in-out infinite alternate-reverse; }
 .intro-page ::selection { background: #6435ac; color: white; }
 .intro-page .site-header { position: absolute; }
 .intro-content, .intro-footer { width: min(100% - clamp(4rem, 10vw, 9rem), 1120px); margin-inline: auto; }
 .intro-skip { position: absolute; top: 1rem; left: 1rem; padding: .75rem; background: white; color: black; z-index: 100; transform: translateY(-200%); }
 .intro-skip:focus { transform: none; }
 .intro-hero { display: grid; grid-template-columns: 1.4fr 1fr; align-items: center; gap: clamp(2rem, 5vw, 4rem); max-width: 1040px; margin-inline: auto; padding-block: clamp(9rem, 13vw, 12rem) clamp(5rem, 9vw, 8rem); }
-.intro-eyebrow { font-size: .875rem; letter-spacing: .14em; text-transform: uppercase; color: var(--intro-muted); }
-.intro-hero h1 { font-size: clamp(4.5rem, 8.8vw, 8rem); font-weight: 500; line-height: .94; letter-spacing: -.035em; margin-block: 1.5rem 2rem; }
-.intro-hero h1 em { font-weight: 500; background-image: linear-gradient(90deg, #a77bdf, #e2cff8, #a77bdf); background-size: 200% auto; background-clip: text; -webkit-background-clip: text; color: transparent; }
+.intro-pill { display: inline-block; padding: .65rem 1.25rem; border: 1px solid rgb(167 123 223 / .25); border-radius: 999px; background: rgb(255 255 255 / .04); color: #a77bdf; font-size: .8125rem; font-weight: 700; letter-spacing: .25em; text-transform: uppercase; box-shadow: 0 8px 28px rgb(100 53 172 / .12); }
+.intro-hero h1 { font-size: clamp(4rem, 7.5vw, 6.5rem); font-weight: 500; line-height: .9; letter-spacing: -.025em; margin-block: 1.5rem; background: linear-gradient(135deg, white, white 35%, rgb(255 255 255 / .4)); background-clip: text; -webkit-background-clip: text; color: transparent; }
 .intro-description { font-size: 1.375rem; font-weight: 300; line-height: 1.5; max-width: 23rem; color: #c4c0cb; }
-.intro-button { display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; min-height: 48px; margin-top: 2rem; background: #6435ac; color: white; font-size: 1.125rem; border: 1px solid #ffffff14; border-radius: 999px; box-shadow: 0 8px 32px rgb(100 53 172 / .2); transition: background .2s, box-shadow .2s; }
+.intro-button { display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; min-height: 48px; margin-top: 2rem; background: #6435ac; color: white; font-size: .875rem; font-weight: 500; letter-spacing: .15em; border: 1px solid rgb(167 123 223 / .4); border-radius: 999px; box-shadow: 0 8px 32px rgb(100 53 172 / .2); transition: background .2s, box-shadow .2s; }
 .intro-button:hover { background: #7645bf; box-shadow: 0 8px 36px rgb(100 53 172 / .35); }
-.intro-button-secondary { margin-top: 0; background: rgb(100 53 172 / .15); border-color: rgb(167 123 223 / .3); box-shadow: none; }
-.intro-note { margin-top: 1rem; font-size: .9375rem; color: var(--intro-muted); }
-.intro-ticket { background: linear-gradient(145deg, #eee7f5, #d7c6e7); color: #30203e; border: 1px solid #ffffff50; border-radius: 2rem; box-shadow: 0 28px 90px -35px rgb(100 53 172 / .5); padding: 1.5rem 1.75rem 0; transform: rotate(2deg); max-width: 360px; width: 100%; justify-self: center; }
-.ticket-top { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #25202c40; font-size: .6875rem; text-transform: uppercase; letter-spacing: .12em; }
+.intro-note { margin-top: 1rem; font-size: .9375rem; color: var(--intro-purple); }
+.intro-ticket { mask-image: radial-gradient(circle at 0 53px, transparent 8px, black 8.5px), radial-gradient(circle at 100% 53px, transparent 8px, black 8.5px), radial-gradient(circle at 0 calc(100% - 74px), transparent 8px, black 8.5px), radial-gradient(circle at 100% calc(100% - 74px), transparent 8px, black 8.5px); mask-composite: intersect; background: linear-gradient(145deg, #eee7f5, #d7c6e7); color: #30203e; border: 1px solid #ffffff50; border-radius: 2rem; box-shadow: 0 28px 90px -35px rgb(100 53 172 / .5); padding: 1.5rem 1.75rem 0; transform: rotate(2deg); max-width: 360px; width: 100%; justify-self: center; }
+.ticket-top { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: 1rem; line-height: 12px; border-bottom: 1px solid #25202c40; font-size: .6875rem; text-transform: uppercase; letter-spacing: .12em; }
 .intro-ticket img { width: 64px; height: 64px; object-fit: contain; margin: 2.5rem auto 1.5rem; }
 .intro-ticket > p { font-size: clamp(3rem, 5.5vw, 5rem); text-transform: uppercase; text-align: center; line-height: .95; font-weight: 500; letter-spacing: -.03em; margin-bottom: 2.5rem; }
-.ticket-stub { position: relative; display: flex; justify-content: space-between; align-items: end; gap: 1rem; border-top: 1px dashed #25202c60; padding-block: 1.25rem; font-size: .8125rem; line-height: 1.3; }
-.ticket-mark { font-size: 2rem; font-style: italic; font-weight: 500; letter-spacing: -.06em; color: #6435ac; }
-.intro-modes { border-top: 1px solid #ffffff26; padding-block: 4rem 5rem; }
-.intro-section-heading h2 { font-size: clamp(2.5rem, 4.2vw, 3.5rem); font-weight: 400; letter-spacing: -.025em; line-height: 1.1; margin-block: .875rem 1rem; }
-.intro-section-heading > p:last-child { color: var(--intro-muted); font-size: 1.25rem; font-weight: 300; line-height: 1.5; }
-.intro-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem; }
-.intro-mode-grid article { border: 1px solid #ffffff14; background: rgb(8 8 14 / .65); border-radius: 2rem; padding: clamp(1.5rem, 3vw, 2.5rem); }
-.intro-mode-label { font-size: .8125rem; letter-spacing: .1em; text-transform: uppercase; color: var(--intro-purple); }
-.intro-mode-grid h3 { font-size: 3rem; line-height: 1; font-weight: 400; margin-block: .75rem 1rem; }
+.ticket-stub { position: relative; display: flex; justify-content: space-between; align-items: end; gap: 1rem; border-top: 1px dashed #25202c60; height: 74px; padding-block: 1.25rem; font-size: .8125rem; line-height: 1.3; }
+.ticket-mark { font-size: 2rem; line-height: 1; font-style: italic; font-weight: 500; letter-spacing: -.06em; color: #6435ac; }
+.intro-modes { border-top: 1px solid #ffffff26; padding-block: 2.5rem 4rem; }
+.intro-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.intro-mode-grid article { border: 1px solid rgb(167 123 223 / .2); background: rgb(8 8 14 / .65); border-radius: 2rem; padding: clamp(1.5rem, 3vw, 2.5rem); }
+.intro-mode-grid h3 { font-size: 1.5rem; letter-spacing: .12em; line-height: 1; font-weight: 500; margin-bottom: .75rem; }
 .intro-mode-grid p { max-width: 25rem; color: #c4c0cb; font-size: 1.25rem; font-weight: 300; line-height: 1.5; }
-.intro-invitation { border-top: 1px solid #ffffff26; padding-block: 3rem; display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
-.intro-invitation h2 { font-size: clamp(2.5rem, 4.2vw, 3.5rem); letter-spacing: -.025em; font-weight: 400; line-height: 1; }
 .intro-footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 1.5rem 2rem; border-top: 1px solid #ffffff26; font-size: .875rem; color: var(--intro-muted); }
 .intro-footer nav { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; }
 .intro-footer a { display: inline-flex; align-items: center; min-height: 44px; }
 .intro-footer a:not(.intro-signature):hover { color: white; }
 .intro-footer .intro-signature { padding-inline: .25rem; font-size: 1.125rem; line-height: 1.5; }
 .intro-signature:hover { opacity: .8; }
+.intro-room-preview { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 3rem; margin-top: 1.5rem; padding: clamp(1.5rem, 3vw, 2.5rem); border: 1px solid rgb(167 123 223 / .2); border-radius: 2rem; background: rgb(8 8 14 / .65); }
+.intro-chat-example h3 { display: flex; align-items: center; gap: .75rem; font-size: .875rem; font-weight: 500; letter-spacing: .15em; margin-bottom: 1.25rem; }
+.intro-chat-example h3 svg { color: #a77bdf; }
+.intro-chat-example h3 span { margin-left: auto; color: var(--intro-muted); font-size: .75rem; font-weight: 400; letter-spacing: 0; }
+.intro-message { display: flex; align-items: end; gap: .625rem; }
+.intro-message img { border-radius: .75rem; flex-shrink: 0; }
+.intro-message div > span { display: block; font-size: .75rem; color: var(--intro-muted); margin: 0 0 .25rem .25rem; }
+.intro-message p { padding: .625rem .875rem; background: rgb(255 255 255 / .06); border: 1px solid #ffffff0d; border-radius: 1rem 1rem 1rem .25rem; font-size: 1rem; }
+.intro-message-self { justify-content: end; margin-top: .75rem; }
+.intro-message-self p { background: #6435ac; border-radius: 1rem 1rem .25rem 1rem; }
+.intro-room-details { display: grid; gap: 1.5rem; }
+.intro-room-details p { display: flex; align-items: center; gap: 1rem; font-size: 1.25rem; color: #c4c0cb; }
+.intro-room-details svg { color: #a77bdf; width: 1rem; flex-shrink: 0; }
+@keyframes intro-haze { from { transform: translate(0, 0); opacity: .65; } to { transform: translate(55px, 35px); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .intro-page::before, .intro-page::after { animation: none; } }
 @media (max-width: 700px) {
     .intro-hero { grid-template-columns: 1fr; gap: 3.5rem; padding-top: 8rem; }
-    .intro-hero h1 { font-size: clamp(4rem, 13vw, 6rem); }
+    .intro-hero h1 { font-size: clamp(3.25rem, 12vw, 5rem); }
     .intro-description { max-width: 28rem; }
     .intro-ticket { width: min(100% - 1.5rem, 320px); transform: rotate(2deg); }
     .intro-ticket > p { font-size: 4rem; }
-    .intro-mode-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .intro-mode-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .intro-room-preview { grid-template-columns: 1fr; gap: 2rem; }
     .intro-modes { padding-block: 3rem; }
-    .intro-invitation { align-items: start; flex-direction: column; gap: 1.25rem; }
     .intro-footer { align-items: start; flex-direction: column; }
-    .intro-desktop-break { display: none; }
 }

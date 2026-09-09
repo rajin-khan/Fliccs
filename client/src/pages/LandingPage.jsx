@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { FaComments, FaLink, FaExpand } from 'react-icons/fa';
 import SiteHeader from '../components/Layout/SiteHeader';
 import './landing.css';
 
@@ -10,14 +11,14 @@ export default function LandingPage() {
             <main id="intro-content" className="intro-content">
                 <section className="intro-hero" aria-labelledby="intro-title">
                     <div>
-                        <p className="intro-eyebrow">A watch party, wherever you are.</p>
-                        <h1 id="intro-title">Press play.<br /><em className="animate-shine">Stay close.</em></h1>
-                        <p className="intro-description">For the films you keep quoting. The videos you have to share. And the people you wish were on the sofa.</p>
-                        <Link to="/" className="intro-button">Start watching</Link>
-                        <p className="intro-note">Right in your browser. No account needed.</p>
+                        <p className="intro-pill">Real time. Real fast.</p>
+                        <h1 id="intro-title">WATCH<br />TOGETHER.</h1>
+                        <p className="intro-description">Your videos. Your friends. One room.</p>
+                        <Link to="/" className="intro-button">START WATCHING</Link>
+                        <p className="intro-note">Live chat. Private rooms. No account needed.</p>
                     </div>
                     <div className="intro-ticket" aria-hidden="true">
-                        <div className="ticket-top"><span>Fliccs picture club</span><span>Est. 2026</span></div>
+                        <div className="ticket-top"><span>Fliccs picture club</span><span>Est. 2025</span></div>
                         <img src="/fliccs-icon.png" alt="" width="96" height="96" />
                         <p>Saved you<br />a seat.</p>
                         <div className="ticket-stub"><span>Bring a film.<br />Bring your people.</span><span className="ticket-mark">fliccs</span></div>
@@ -25,28 +26,34 @@ export default function LandingPage() {
                 </section>
 
                 <section id="how-it-works" className="intro-modes" aria-labelledby="modes-title">
-                    <div className="intro-section-heading">
-                        <p className="intro-eyebrow">A little less “3, 2, 1, play.”</p>
-                        <h2 id="modes-title">One room. Two ways to watch.</h2>
-                        <p>Create a room, send the invite, and pick a local video.<br className="intro-desktop-break" /> Your conversation has a place in the room, too.</p>
-                    </div>
+                    <h2 id="modes-title" className="sr-only">Inside a Fliccs room</h2>
                     <div className="intro-mode-grid">
                         <article>
-                            <span className="intro-mode-label">You both have the file</span>
-                            <h3>Sync.</h3>
-                            <p>Everyone opens the same video on their own device. Play, pause, and seek together, with each person watching their local copy.</p>
+                            <h3>SYNC</h3>
+                            <p>Same file on every device. Play, pause, and seek together.</p>
                         </article>
                         <article>
-                            <span className="intro-mode-label">Only you have the file</span>
-                            <h3>Stream.</h3>
-                            <p>Play a video from your computer and stream it to the room. Your friends join in their browsers, without needing their own copy.</p>
+                            <h3>STREAM</h3>
+                            <p>You play the video. Your friends watch in their browsers.</p>
                         </article>
                     </div>
-                </section>
-
-                <section className="intro-invitation" aria-labelledby="invitation-title">
-                    <h2 id="invitation-title">Make a night of it.</h2>
-                    <Link to="/" className="intro-button intro-button-secondary">Open Fliccs</Link>
+                    <div className="intro-room-preview">
+                        <div className="intro-chat-example">
+                            <h3><FaComments aria-hidden="true" /> ROOM CHAT <span>Preview</span></h3>
+                            <div className="intro-message">
+                                <img src="https://api.dicebear.com/9.x/avataaars-neutral/svg?seed=fliccs-sam" alt="" width="32" height="32" loading="lazy" />
+                                <div><span>Sam</span><p>wait, this is the good part</p></div>
+                            </div>
+                            <div className="intro-message intro-message-self">
+                                <p>turning it up</p>
+                                <img src="https://api.dicebear.com/9.x/avataaars-neutral/svg?seed=fliccs-alex" alt="" width="32" height="32" loading="lazy" />
+                            </div>
+                        </div>
+                        <div className="intro-room-details">
+                            <p><FaLink aria-hidden="true" /><span>Share a link. They're in.</span></p>
+                            <p><FaExpand aria-hidden="true" /><span>Go fullscreen. Keep the chat.</span></p>
+                        </div>
+                    </div>
                 </section>
             </main>
             <footer className="intro-footer">
